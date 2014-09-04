@@ -31,16 +31,21 @@ Import(['clean_envs'])
 
 tools_env = clean_envs['userspace'].Clone()
 
+
+# Build Library
+ws2811_lib = tools_env.Library('libws2811', [ 'ws2811.c' ])
+tools_env['LIBS'].append(ws2811_lib)
+
+
+# Test Program
 srcs = Split('''
-    ws2811.c
     main.c
 ''')
 
-# Test
 objs = []
 for src in srcs:
    objs.append(tools_env.Object(src))
 
 test = tools_env.Program('test', objs + tools_env['LIBS'])
 
-Default([test])
+Default([test, ws2811_lib])

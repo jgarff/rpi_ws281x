@@ -32,7 +32,6 @@
 
 
 typedef struct {
-    uint32_t resvd_0x0[40];
     uint32_t ctl;
 #define CM_PWM_CTL_PASSWD                        (0x5a << 24)
 #define CM_PWM_CTL_MASH(val)                     ((val & 0x3) << 9)
@@ -55,8 +54,7 @@ typedef struct {
 } __attribute__ ((packed)) cm_pwm_t;
 
 
-//#define CM_PWM                                   (0x201010a0)  // 0x7e1010a0
-#define CM_PWM                                   (0x20101000)  // 0x7e1010a0
+#define CM_PWM                                   (0x201010a0)  // 0x7e1010a0
 
 
 #endif /* __CLK_H__ */

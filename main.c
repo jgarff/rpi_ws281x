@@ -142,6 +142,8 @@ static void setup_handlers(void)
 
 int main(int argc, char *argv[])
 {
+    int ret = 0;
+
     setup_handlers();
 
     if (ws2811_init(&ledstring))
@@ -155,7 +157,11 @@ int main(int argc, char *argv[])
         matrix_bottom();
         matrix_render();
 
-        ws2811_render(&ledstring);
+        if (ws2811_render(&ledstring))
+        {
+            ret = -1;
+            break;
+        }
 
         // 15 frames /sec
         usleep(1000000 / 15);
@@ -163,6 +169,6 @@ int main(int argc, char *argv[])
 
     ws2811_fini(&ledstring);
 
-    return 0;
+    return ret;
 }
 

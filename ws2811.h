@@ -51,8 +51,8 @@ typedef struct
 
 int ws2811_init(ws2811_t *ws2811);               //< Initialize buffers/hardware
 void ws2811_fini(ws2811_t *ws2811);              //< Tear it all down
-void ws2811_render(ws2811_t *ws2811);            //< Send LEDs off to hardware
-void ws2811_wait(ws2811_t *ws2811);              //< Wait for DMA completion
+int ws2811_render(ws2811_t *ws2811);             //< Send LEDs off to hardware
+int ws2811_wait(ws2811_t *ws2811);               //< Wait for DMA completion
 
 
 #endif /* __WS2811_H__ */

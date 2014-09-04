@@ -505,17 +505,26 @@ void ws2811_fini(ws2811_t *ws2811)
     free(ws2811->device);
 }
 
-void ws2811_wait(ws2811_t *ws2811)
+int ws2811_wait(ws2811_t *ws2811)
 {
     volatile dma_t *dma = ws2811->device->dma;
 
-    while (dma->txfr_len)
+    while ((dma->cs & RPI_DMA_CS_ACTIVE) &&
+           !(dma->cs & RPI_DMA_CS_ERROR))
     {
         usleep(10);
     }
+
+    if (dma->cs & RPI_DMA_CS_ERROR)
+    {
+        fprintf(stderr, "DMA Error: %08x\n", dma->debug);
+        return -1;
+    }
+
+    return 0;
 }
 
-void ws2811_render(ws2811_t *ws2811)
+int ws2811_render(ws2811_t *ws2811)
 {
     volatile uint8_t *pwm_raw = ws2811->device->pwm_raw;
     int bitpos = 31, wordpos = 0;
@@ -565,7 +574,13 @@ void ws2811_render(ws2811_t *ws2811)
     __clear_cache((char *)pwm_raw,
                   (char *)&pwm_raw[LED_BYTE_COUNT(ws2811->count, ws2811->freq)]);
 
-    ws2811_wait(ws2811);
+    if (ws2811_wait(ws2811))
+    {
+        return -1;
+    }
+
     dma_start(ws2811);
+
+    return 0;
 }
 
