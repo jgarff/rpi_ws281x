@@ -11,6 +11,6 @@ setup(name              = 'rpi_ws281x',
       url               = 'https://github.com/jgarff/rpi_ws281x/',
       ext_modules       = [Extension('_rpi_ws281x', 
                                      sources=['rpi_ws281x.i'],
-                                     library_dirs=['/home/pi/rpi_ws281x'],
+                                     library_dirs=['../.'],
                                      libraries=['ws2811'])],
       packages          = find_packages())
