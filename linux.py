@@ -51,7 +51,6 @@ def linux_tools(env):
 def linux_flags(env):
     env.MergeFlags({
         'CPPFLAGS' : '''
-            -O2
             -Wall
             -Werror
         '''.split(),
