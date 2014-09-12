@@ -65,6 +65,8 @@ class Adafruit_NeoPixel(object):
 		ws.ws2811_t_invert_set(self._leds, 0 if not invert else 1)
 		# Create led data array.
 		self._led_data = _LED_Data(num)
+		# Start at full brightness.
+		self._brightness = 0
 
 	def __del__(self):
 		# Clean up memory used by the library when not needed anymore.
@@ -108,7 +110,33 @@ class Adafruit_NeoPixel(object):
 		of 0 is the darkest and 255 is the brightest.  Note that scaling can have
 		quantization issues (i.e. blowing out to white or black) if used repeatedly!
 		"""
-		raise NotImplementedError
+		# This is a direct port of the Arduino code.  It can likely be a little more
+		# optimized for clarity since speed doesn't matter as much on the Pi!
+		new_brightness = brightness + 1
+		if new_brightness != self._brightness:
+			old_brightness = self._brightness - 1
+			# Handle if brightness goes negative and should overflow with unsigned types.
+			if old_brightness < 0:
+				old_brightness = 255
+			if old_brightness == 0:
+				scale = 0
+			elif brightness == 255:
+				scale = 65535 / old_brightness
+			else:
+				scale = ((new_brightness << 8) - 1) / old_brightness
+			for i in range(self.numPixels()):
+				# Original code operates on bytes, but pixel data is stored in 32 bit
+				# unsigned ints.  Break each 32 bit value down into its components
+				# and scale them individually, then reassemble and set color.
+				color = self._led_data[i]
+				red   = (color >> 16) & 0xFF
+				green = (color >> 8)  & 0xFF
+				blue  = color         & 0xFF
+				red   = (red * scale)   >> 8
+				green = (green * scale) >> 8
+				blue  = (blue * scale)  >> 8
+				self._led_data[i] = Color(red, green, blue)
+			self._brightness = new_brightness
 
 	def getPixels(self):
 		"""Return an object which allows access to the LED display data as if 
