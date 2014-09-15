@@ -58,7 +58,7 @@
 #define LED_BIT_COUNT(leds, freq)                ((leds * 3 * 8 * 3) + ((LED_RESET_uS * \
                                                   (freq * 3)) / 1000000))
 
-// Pad out to the nearest uint32 + 32-bits for idle high
+// Pad out to the nearest uint32 + 32-bits for idle low
 #define LED_BYTE_COUNT(leds, freq)               ((((LED_BIT_COUNT(leds, freq) >> 3) & ~0x7) + 4) + 4)
 
 #define SYMBOL_HIGH                              0x6  // 1 1 0

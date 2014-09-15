@@ -49,13 +49,13 @@
 
 #define ARRAY_SIZE(stuff)                        (sizeof(stuff) / sizeof(stuff[0]))
 
-#define TARGET_FREQ                              400000
+#define TARGET_FREQ                              800000
 #define GPIO_PIN                                 18
-#define LED_COUNT                                64
 #define DMA                                      5
 
 #define WIDTH                                    8
 #define HEIGHT                                   8
+#define LED_COUNT                                (WIDTH * HEIGHT)
 
 
 ws2811_t ledstring =
@@ -64,7 +64,7 @@ ws2811_t ledstring =
     .freq = TARGET_FREQ,
     .dmanum = DMA,
     .gpionum = GPIO_PIN,
-    .invert = 1,
+    .invert = 0,
 };
 
 ws2811_led_t matrix[WIDTH][HEIGHT];
