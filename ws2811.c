@@ -52,6 +52,7 @@
 #define PAGE_SIZE                                (1 << 12)
 #define PAGE_MASK                                (~(PAGE_SIZE - 1))
 #define PAGE_OFFSET(page)                        (page & (PAGE_SIZE - 1))
+#define MAX_PAGES                                (PAGE_SIZE / sizeof(dma_cb_t))
 
 /* 3 colors, 8 bits per byte, 3 symbols per bit + 55uS low for reset signal */
 #define LED_RESET_uS                             55
@@ -59,13 +60,20 @@
                                                   (freq * 3)) / 1000000))
 
 // Pad out to the nearest uint32 + 32-bits for idle low
-#define LED_BYTE_COUNT(leds, freq)               ((((LED_BIT_COUNT(leds, freq) >> 3) & ~0x7) + 4) + 4)
+#define PWM_BYTE_COUNT(leds, freq)               ((((LED_BIT_COUNT(leds, freq) >> 3) & ~0x7) + 4) + 4)
 
 #define SYMBOL_HIGH                              0x6  // 1 1 0
 #define SYMBOL_LOW                               0x4  // 1 0 0
 
 #define ARRAY_SIZE(stuff)                        (sizeof(stuff) / sizeof(stuff[0]))
 
+
+typedef struct dma_page
+{
+    struct dma_page *next;
+    struct dma_page *prev;
+    void *addr;
+} dma_page_t;
 
 typedef struct ws2811_device
 {
@@ -74,6 +82,7 @@ typedef struct ws2811_device
     volatile pwm_t *pwm;
     volatile dma_cb_t *dma_cb;
     uint32_t dma_cb_addr;
+    dma_page_t page_head;
     volatile gpio_t *gpio;
     volatile cm_pwm_t *cm_pwm;
 } ws2811_device_t;
@@ -132,10 +141,93 @@ const static uint32_t dma_addr[] =
 void __clear_cache(char *begin, char *end);
 
 
-static void *dma_page_alloc(uint32_t size)
+static dma_page_t *dma_page_add(dma_page_t *head, void *addr)
+{
+    dma_page_t *page = malloc(sizeof(dma_page_t));
+
+    if (!page)
+    {
+        return NULL;
+    }
+
+    page->next = head;
+    page->prev = head->prev;
+
+    head->prev->next = page;
+    head->prev = page;
+
+    page->addr = addr;
+
+    return page;
+}
+
+static void dma_page_remove(dma_page_t *page)
+{
+    page->prev->next = page->next;
+    page->next->prev = page->prev;
+
+    free(page);
+}
+
+static void dma_page_remove_all(dma_page_t *head)
+{
+    while (head->next != head)
+    {
+        dma_page_remove(head->next);
+    }
+}
+
+static dma_page_t *dma_page_next(dma_page_t *head, dma_page_t *page)
+{
+    if (page->next != head)
+    {
+        return page->next;
+    }
+
+    return NULL;
+}
+
+static void dma_page_init(dma_page_t *page)
+{
+    memset(page, 0, sizeof(*page));
+
+    page->next = page;
+    page->prev = page;
+}
+
+static void *dma_alloc(dma_page_t *head, uint32_t size)
 {
     uint32_t pages = (size / PAGE_SIZE) + 1;
     void *vaddr;
+    int i;
+
+    vaddr = mmap(NULL, pages * PAGE_SIZE,
+                 PROT_READ | PROT_WRITE,
+                 MAP_SHARED | MAP_ANONYMOUS | MAP_NORESERVE |
+                 MAP_LOCKED, -1, 0);
+    if (vaddr == MAP_FAILED)
+    {
+        perror("dma_alloc() mmap() failed");
+        return NULL;
+    }
+
+    for (i = 0; i < pages; i++)
+    {
+        if (!dma_page_add(head, &((uint8_t *)vaddr)[PAGE_SIZE * i]))
+        {
+            dma_page_remove_all(head);
+            munmap(vaddr, pages * PAGE_SIZE);
+            return NULL;
+        }
+    }
+
+    return vaddr;
+}
+
+static dma_cb_t *dma_desc_alloc(uint32_t descriptors)
+{
+    uint32_t pages = ((descriptors * sizeof(dma_cb_t)) / PAGE_SIZE);
+    dma_cb_t *vaddr;
 
     if (pages > 1)
     {
@@ -148,7 +240,7 @@ static void *dma_page_alloc(uint32_t size)
                  MAP_LOCKED, -1, 0);
     if (vaddr == MAP_FAILED)
     {
-        perror("dma_page_alloc() mmap() failed");
+        perror("dma_desc_alloc() mmap() failed");
         return NULL;
     }
 
@@ -316,7 +408,6 @@ static void stop_pwm(ws2811_t *ws2811)
 static int setup_pwm(ws2811_t *ws2811)
 {
     ws2811_device_t *device = ws2811->device;
-    volatile uint8_t *pwm_raw = device->pwm_raw;
     volatile dma_t *dma = device->dma;
     volatile dma_cb_t *dma_cb = device->dma_cb;
     volatile pwm_t *pwm = device->pwm;
@@ -324,6 +415,8 @@ static int setup_pwm(ws2811_t *ws2811)
     int count = ws2811->count;
     uint32_t freq = ws2811->freq;
     int invert = ws2811->invert;
+    dma_page_t *page;
+    int32_t byte_count;
 
     stop_pwm(ws2811);
 
@@ -350,22 +443,41 @@ static int setup_pwm(ws2811_t *ws2811)
     pwm->ctl |= RPI_PWM_CTL_PWEN1;
     usleep(10);
 
-    // Setup the DMA control block
-    dma_cb->ti = RPI_DMA_TI_NO_WIDE_BURSTS |  // 32-bit transfers
-                 RPI_DMA_TI_WAIT_RESP |       // wait for write complete
-                 RPI_DMA_TI_DEST_DREQ |       // user peripheral flow control
-                 RPI_DMA_TI_PERMAP(5) |       // PWM peripheral
-                 RPI_DMA_TI_SRC_INC;          // Increment src addr
-
-    dma_cb->source_ad = addr_to_bus(pwm_raw);
-    if (dma_cb->source_ad == ~0L)
+    // Initialize the DMA control blocks to chain together all the DMA pages
+    page = &device->page_head;
+    byte_count = PWM_BYTE_COUNT(count, freq);
+    while ((page = dma_page_next(&device->page_head, page)) &&
+           byte_count)
     {
-        return -1;
+        int32_t page_bytes = PAGE_SIZE < byte_count ? PAGE_SIZE : byte_count;
+
+        dma_cb->ti = RPI_DMA_TI_NO_WIDE_BURSTS |  // 32-bit transfers
+                     RPI_DMA_TI_WAIT_RESP |       // wait for write complete
+                     RPI_DMA_TI_DEST_DREQ |       // user peripheral flow control
+                     RPI_DMA_TI_PERMAP(5) |       // PWM peripheral
+                     RPI_DMA_TI_SRC_INC;          // Increment src addr
+
+        dma_cb->source_ad = addr_to_bus(page->addr);
+        if (dma_cb->source_ad == ~0L)
+        {
+            return -1;
+        }
+
+        dma_cb->dest_ad = (uint32_t)&((pwm_t *)PWM_PERIPH)->fif1;
+        dma_cb->txfr_len = page_bytes;
+        dma_cb->stride = 0;
+        dma_cb->nextconbk = addr_to_bus(dma_cb + 1);
+
+        byte_count -= page_bytes;
+        if (!dma_page_next(&device->page_head, page))
+        {
+            break;
+        }
+
+        dma_cb++;
     }
 
-    dma_cb->dest_ad = (uint32_t)&((pwm_t *)PWM_PERIPH)->fif1;
-    dma_cb->txfr_len = LED_BYTE_COUNT(count, freq);
-    dma_cb->stride = 0;
+    // Terminate the final control block to stop DMA
     dma_cb->nextconbk = 0;
 
     dma->cs = 0;
@@ -414,6 +526,8 @@ int ws2811_init(ws2811_t *ws2811)
         return -1;
     }
 
+    dma_page_init(&ws2811->device->page_head);
+
     // Allocate the LED buffers
     ws2811->leds = malloc(sizeof(*ws2811->leds) * ws2811->count);
     if (!ws2811->leds)
@@ -424,20 +538,20 @@ int ws2811_init(ws2811_t *ws2811)
     memset(ws2811->leds, 0, sizeof(*ws2811->leds) * ws2811->count);
 
     // Allocate the DMA buffer
-    ws2811->device->pwm_raw = dma_page_alloc(LED_BYTE_COUNT(ws2811->count, ws2811->freq));
+    ws2811->device->pwm_raw = dma_alloc(&ws2811->device->page_head, PWM_BYTE_COUNT(ws2811->count, ws2811->freq));
     if (!ws2811->device->pwm_raw)
     {
         free(ws2811->leds);
         free(ws2811->device);
         return -1;
     }
-    memset((uint8_t *)ws2811->device->pwm_raw, 0, LED_BYTE_COUNT(ws2811->count, ws2811->freq));
+    memset((uint8_t *)ws2811->device->pwm_raw, 0, PWM_BYTE_COUNT(ws2811->count, ws2811->freq));
 
     // Allocate the DMA control block
-    ws2811->device->dma_cb = dma_page_alloc(sizeof(dma_cb_t));
+    ws2811->device->dma_cb = dma_desc_alloc(MAX_PAGES);
     if (!ws2811->device->dma_cb)
     {
-        dma_page_free((uint8_t *)ws2811->device->pwm_raw, LED_BYTE_COUNT(ws2811->count, ws2811->freq));
+        dma_page_free((uint8_t *)ws2811->device->pwm_raw, PWM_BYTE_COUNT(ws2811->count, ws2811->freq));
         free(ws2811->leds);
         free(ws2811->device);
         return -1;
@@ -448,7 +562,7 @@ int ws2811_init(ws2811_t *ws2811)
     ws2811->device->dma_cb_addr = addr_to_bus(ws2811->device->dma_cb);
     if (ws2811->device->dma_cb_addr == ~0L)
     {
-        dma_page_free((uint8_t *)ws2811->device->pwm_raw, LED_BYTE_COUNT(ws2811->count, ws2811->freq));
+        dma_page_free((uint8_t *)ws2811->device->pwm_raw, PWM_BYTE_COUNT(ws2811->count, ws2811->freq));
         dma_page_free((dma_cb_t *)ws2811->device->dma_cb, sizeof(dma_cb_t));
         free(ws2811->leds);
         free(ws2811->device);
@@ -458,7 +572,7 @@ int ws2811_init(ws2811_t *ws2811)
     // Map the physical registers into userspace
     if (map_registers(ws2811))
     {
-        dma_page_free((uint8_t *)ws2811->device->pwm_raw, LED_BYTE_COUNT(ws2811->count, ws2811->freq));
+        dma_page_free((uint8_t *)ws2811->device->pwm_raw, PWM_BYTE_COUNT(ws2811->count, ws2811->freq));
         dma_page_free((dma_cb_t *)ws2811->device->dma_cb, sizeof(dma_cb_t));
         free(ws2811->leds);
         free(ws2811->device);
@@ -469,7 +583,7 @@ int ws2811_init(ws2811_t *ws2811)
     if (gpio_init(ws2811))
     {
         unmap_registers(ws2811);
-        dma_page_free((uint8_t *)ws2811->device->pwm_raw, LED_BYTE_COUNT(ws2811->count, ws2811->freq));
+        dma_page_free((uint8_t *)ws2811->device->pwm_raw, PWM_BYTE_COUNT(ws2811->count, ws2811->freq));
         dma_page_free((dma_cb_t *)ws2811->device->dma_cb, sizeof(dma_cb_t));
         free(ws2811->leds);
         free(ws2811->device);
@@ -480,7 +594,7 @@ int ws2811_init(ws2811_t *ws2811)
     if (setup_pwm(ws2811))
     {
         unmap_registers(ws2811);
-        dma_page_free((uint8_t *)ws2811->device->pwm_raw, LED_BYTE_COUNT(ws2811->count, ws2811->freq));
+        dma_page_free((uint8_t *)ws2811->device->pwm_raw, PWM_BYTE_COUNT(ws2811->count, ws2811->freq));
         dma_page_free((dma_cb_t *)ws2811->device->dma_cb, sizeof(dma_cb_t));
         free(ws2811->leds);
         free(ws2811->device);
@@ -497,8 +611,9 @@ void ws2811_fini(ws2811_t *ws2811)
 
     unmap_registers(ws2811);
 
+    dma_page_remove_all(&ws2811->device->page_head);
     dma_page_free((dma_cb_t *)ws2811->device->dma_cb, sizeof(*ws2811->device->dma_cb));
-    dma_page_free((uint8_t *)ws2811->device->pwm_raw, LED_BYTE_COUNT(ws2811->count,
+    dma_page_free((uint8_t *)ws2811->device->pwm_raw, PWM_BYTE_COUNT(ws2811->count,
                    ws2811->freq));
 
     free(ws2811->leds);
@@ -572,7 +687,7 @@ int ws2811_render(ws2811_t *ws2811)
     }
 
     __clear_cache((char *)pwm_raw,
-                  (char *)&pwm_raw[LED_BYTE_COUNT(ws2811->count, ws2811->freq)]);
+                  (char *)&pwm_raw[PWM_BYTE_COUNT(ws2811->count, ws2811->freq)]);
 
     if (ws2811_wait(ws2811))
     {
