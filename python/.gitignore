@@ -1,0 +1,9 @@
+*.pyc
+*.so
+build/
+*.egg-info/
+rpi_ws281x.py
+rpi_ws281x_wrap.c
+_rpi_ws281x.py
+*.egg
+*.zip
