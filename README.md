@@ -33,7 +33,7 @@ The test program is designed to drive a 8x8 grid of LEDs from Adafruit
 (http://www.adafruit.com/products/1487).  Please see the Adafruit
 website for more information.
 
-Know what your doing with the hardware and electricity.  I take no
+Know what you're doing with the hardware and electricity.  I take no
 reponsibility for damage, harm, or mistakes.
 
 
