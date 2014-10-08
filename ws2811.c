@@ -414,7 +414,6 @@ static int setup_pwm(ws2811_t *ws2811)
     volatile cm_pwm_t *cm_pwm = device->cm_pwm;
     int count = ws2811->count;
     uint32_t freq = ws2811->freq;
-    int invert = ws2811->invert;
     dma_page_t *page;
     int32_t byte_count;
 
@@ -436,10 +435,7 @@ static int setup_pwm(ws2811_t *ws2811)
     pwm->dmac = RPI_PWM_DMAC_ENAB | RPI_PWM_DMAC_PANIC(7) | RPI_PWM_DMAC_DREQ(3);
     usleep(10);
     pwm->ctl = RPI_PWM_CTL_USEF1 | RPI_PWM_CTL_MODE1;
-    if (invert)
-    {
-        pwm->ctl |= RPI_PWM_CTL_POLA1;
-    }
+    usleep(10);
     pwm->ctl |= RPI_PWM_CTL_PWEN1;
     usleep(10);
 
@@ -546,6 +542,10 @@ int ws2811_init(ws2811_t *ws2811)
         return -1;
     }
     memset((uint8_t *)ws2811->device->pwm_raw, 0, PWM_BYTE_COUNT(ws2811->count, ws2811->freq));
+    if (ws2811->invert)
+    {
+        memset((uint8_t *)ws2811->device->pwm_raw, 0xff, PWM_BYTE_COUNT(ws2811->count, ws2811->freq));
+    }
 
     // Allocate the DMA control block
     ws2811->device->dma_cb = dma_desc_alloc(MAX_PAGES);
@@ -663,6 +663,11 @@ int ws2811_render(ws2811_t *ws2811)
                 if (color[j] & (1 << k))
                 {
                     symbol = SYMBOL_HIGH;
+                }
+
+                if (ws2811->invert)
+                {
+                    symbol = ~symbol & 0x7;
                 }
 
                 for (l = 2; l >= 0; l--)         // Symbol
