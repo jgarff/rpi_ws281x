@@ -52,7 +52,7 @@ def linux_flags(env):
     env.MergeFlags({
         'CPPFLAGS' : '''
             -g
-            -O0
+            -O2
             -Wall
             -Werror
         '''.split(),
