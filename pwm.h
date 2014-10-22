@@ -50,6 +50,9 @@
  */
 
 
+#define RPI_PWM_CHANNELS                         2
+
+
 typedef struct
 {
     uint32_t ctl;
@@ -98,6 +101,22 @@ typedef struct
 
 #define PWM                                      (0x2020c000)  // 0x7e20c000
 #define PWM_PERIPH                               (0x7e20c000)
+
+
+typedef struct
+{
+    int pinnum;
+    int altnum;
+} pwm_pin_table_t;
+
+typedef struct 
+{
+    const int count;
+    const pwm_pin_table_t *pins;
+} pwm_pin_tables_t;
+
+
+int pwm_pin_alt(int chan, int pinnum);
 
 
 #endif /* __PWM_H__ */

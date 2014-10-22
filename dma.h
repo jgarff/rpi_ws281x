@@ -115,4 +115,32 @@ typedef struct
 #define DMA14                                    (0x20007e00)
 #define DMA15                                    (0x20e05000)
 
+
+#define PAGE_SIZE                                (1 << 12)
+#define PAGE_MASK                                (~(PAGE_SIZE - 1))
+#define PAGE_OFFSET(page)                        (page & (PAGE_SIZE - 1))
+#define MAX_PAGES                                (PAGE_SIZE / sizeof(dma_cb_t))
+
+
+typedef struct dma_page
+{
+    struct dma_page *next;
+    struct dma_page *prev;
+    void *addr;
+} dma_page_t;
+
+
+uint32_t dmanum_to_phys(int dmanum);
+
+void dma_page_init(dma_page_t *page);
+dma_page_t *dma_page_add(dma_page_t *head, void *addr);
+void dma_page_remove(dma_page_t *page);
+void dma_page_remove_all(dma_page_t *head);
+dma_page_t *dma_page_next(dma_page_t *head, dma_page_t *page);
+
+void *dma_alloc(dma_page_t *head, uint32_t size);
+dma_cb_t *dma_desc_alloc(uint32_t descriptors);
+void dma_page_free(void *buffer, const uint32_t size);
+
+
 #endif /* __DMA_H__ */

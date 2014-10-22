@@ -1,5 +1,5 @@
 /*
- * ws2811.h
+ * pwm.c
  *
  * Copyright (c) 2014 Jeremy Garff <jer @ jers.net>
  *
@@ -28,40 +28,85 @@
  */
 
 
-#ifndef __WS2811_H__
-#define __WS2811_H__
+#include <stdint.h>
 
+#include "ws2811.h"
 
 #include "pwm.h"
 
 
-#define WS2811_TARGET_FREQ                       800000   // Can go as low as 400000
-
-struct ws2811_device;
-
-typedef uint32_t ws2811_led_t;                   //< 0x00RRGGBB
-typedef struct
+// Mapping of Pin to alternate function for PWM channel 0
+const pwm_pin_table_t pwm_pin_chan0[] =
 {
-    int gpionum;                                 //< GPIO Pin with PWM alternate function, 0 if unused
-    int invert;                                  //< Invert output signal
-    int count;                                   //< Number of LEDs, 0 if channel is unused
-    ws2811_led_t *leds;                          //< LED buffers, allocated by driver based on count
-} ws2811_channel_t;
+    {
+        .pinnum = 12,
+        .altnum = 0,
+    },
+    {
+        .pinnum = 18,
+        .altnum = 5,
+    },
+    {
+        .pinnum = 40,
+        .altnum = 0,
+    },
+    {
+        .pinnum = 52,
+        .altnum = 1,
+    },
+};
 
-typedef struct
+// Mapping of Pin to alternate function for PWM channel 1
+const pwm_pin_table_t pwm_pin_chan1[] =
 {
-    struct ws2811_device *device;                //< Private data for driver use
-    uint32_t freq;                               //< Required output frequency
-    int dmanum;                                  //< DMA number _not_ already in use
-    ws2811_channel_t channel[RPI_PWM_CHANNELS];
-} ws2811_t;
+    {
+        .pinnum = 13,
+        .altnum = 0,
+    },
+    {
+        .pinnum = 19,
+        .altnum = 5,
+    },
+    {
+        .pinnum = 41,
+        .altnum = 0,
+    },
+    {
+        .pinnum = 45,
+        .altnum = 0,
+    },
+    {
+        .pinnum = 53,
+        .altnum = 1,
+    },
+};
+
+const pwm_pin_tables_t pwm_pin_tables[RPI_PWM_CHANNELS] =
+{
+    {
+        .pins = pwm_pin_chan0,
+        .count = sizeof(pwm_pin_chan0) / sizeof(pwm_pin_chan0[0]),
+    },
+    {
+        .pins = pwm_pin_chan1,
+        .count = sizeof(pwm_pin_chan1) / sizeof(pwm_pin_chan1[0]),
+    },
+};
 
 
-int ws2811_init(ws2811_t *ws2811);               //< Initialize buffers/hardware
-void ws2811_fini(ws2811_t *ws2811);              //< Tear it all down
-int ws2811_render(ws2811_t *ws2811);             //< Send LEDs off to hardware
-int ws2811_wait(ws2811_t *ws2811);               //< Wait for DMA completion
+int pwm_pin_alt(int chan, int pinnum)
+{
+    const pwm_pin_tables_t *pintable = &pwm_pin_tables[chan];
+    int i;
 
+    for (i = 0; i < pintable->count; i++)
+    {
+        if (pintable->pins[i].pinnum == pinnum)
+        {
+            return pintable->pins[i].altnum;
+        }
+    }
 
-#endif /* __WS2811_H__ */
+    return -1;
+}
 

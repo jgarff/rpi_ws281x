@@ -49,31 +49,20 @@
 
 #define OSC_FREQ                                 19200000   // crystal frequency
 
-#define PAGE_SIZE                                (1 << 12)
-#define PAGE_MASK                                (~(PAGE_SIZE - 1))
-#define PAGE_OFFSET(page)                        (page & (PAGE_SIZE - 1))
-#define MAX_PAGES                                (PAGE_SIZE / sizeof(dma_cb_t))
-
 /* 3 colors, 8 bits per byte, 3 symbols per bit + 55uS low for reset signal */
 #define LED_RESET_uS                             55
 #define LED_BIT_COUNT(leds, freq)                ((leds * 3 * 8 * 3) + ((LED_RESET_uS * \
                                                   (freq * 3)) / 1000000))
 
-// Pad out to the nearest uint32 + 32-bits for idle low
-#define PWM_BYTE_COUNT(leds, freq)               ((((LED_BIT_COUNT(leds, freq) >> 3) & ~0x7) + 4) + 4)
+// Pad out to the nearest uint32 + 32-bits for idle low/high times the number of channels
+#define PWM_BYTE_COUNT(leds, freq)               (((((LED_BIT_COUNT(leds, freq) >> 3) & ~0x7) + 4) + 4) * \
+                                                  RPI_PWM_CHANNELS)
 
 #define SYMBOL_HIGH                              0x6  // 1 1 0
 #define SYMBOL_LOW                               0x4  // 1 0 0
 
 #define ARRAY_SIZE(stuff)                        (sizeof(stuff) / sizeof(stuff[0]))
 
-
-typedef struct dma_page
-{
-    struct dma_page *next;
-    struct dma_page *prev;
-    void *addr;
-} dma_page_t;
 
 typedef struct ws2811_device
 {
@@ -85,175 +74,44 @@ typedef struct ws2811_device
     dma_page_t page_head;
     volatile gpio_t *gpio;
     volatile cm_pwm_t *cm_pwm;
+    int max_count;
 } ws2811_device_t;
-
-
-typedef struct
-{
-    int pin;
-    int altnum;
-} pwm_pin_table_t;
-
-// Mapping of Pin to alternate function for PWM channel 0
-const static pwm_pin_table_t pwm_pin_table[] =
-{
-    {
-        .pin = 12,
-        .altnum = 0,
-    },
-    {
-        .pin = 18,
-        .altnum = 5,
-    },
-    {
-        .pin = 40,
-        .altnum = 0,
-    },
-    {
-        .pin = 52,
-        .altnum = 1,
-    },
-};
-
-// DMA address mapping by DMA number index
-const static uint32_t dma_addr[] =
-{
-    DMA0,
-    DMA1,
-    DMA2,
-    DMA3,
-    DMA4,
-    DMA5,
-    DMA6,
-    DMA7,
-    DMA8,
-    DMA9,
-    DMA10,
-    DMA11,
-    DMA12,
-    DMA13,
-    DMA14,
-    DMA15,
-};
 
 
 // ARM gcc built-in function, fortunately works when root w/virtual addrs
 void __clear_cache(char *begin, char *end);
 
 
-static dma_page_t *dma_page_add(dma_page_t *head, void *addr)
+/**
+ * Iterate through the channels and find the largest led count.
+ *
+ * @param    ws2811  ws2811 instance pointer.
+ *
+ * @returns  Maximum number of LEDs in all channels.
+ */
+static int max_channel_led_count(ws2811_t *ws2811)
 {
-    dma_page_t *page = malloc(sizeof(dma_page_t));
+    int chan, max = 0;
 
-    if (!page)
+    for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)
     {
-        return NULL;
-    }
-
-    page->next = head;
-    page->prev = head->prev;
-
-    head->prev->next = page;
-    head->prev = page;
-
-    page->addr = addr;
-
-    return page;
-}
-
-static void dma_page_remove(dma_page_t *page)
-{
-    page->prev->next = page->next;
-    page->next->prev = page->prev;
-
-    free(page);
-}
-
-static void dma_page_remove_all(dma_page_t *head)
-{
-    while (head->next != head)
-    {
-        dma_page_remove(head->next);
-    }
-}
-
-static dma_page_t *dma_page_next(dma_page_t *head, dma_page_t *page)
-{
-    if (page->next != head)
-    {
-        return page->next;
-    }
-
-    return NULL;
-}
-
-static void dma_page_init(dma_page_t *page)
-{
-    memset(page, 0, sizeof(*page));
-
-    page->next = page;
-    page->prev = page;
-}
-
-static void *dma_alloc(dma_page_t *head, uint32_t size)
-{
-    uint32_t pages = (size / PAGE_SIZE) + 1;
-    void *vaddr;
-    int i;
-
-    vaddr = mmap(NULL, pages * PAGE_SIZE,
-                 PROT_READ | PROT_WRITE,
-                 MAP_SHARED | MAP_ANONYMOUS | MAP_NORESERVE |
-                 MAP_LOCKED, -1, 0);
-    if (vaddr == MAP_FAILED)
-    {
-        perror("dma_alloc() mmap() failed");
-        return NULL;
-    }
-
-    for (i = 0; i < pages; i++)
-    {
-        if (!dma_page_add(head, &((uint8_t *)vaddr)[PAGE_SIZE * i]))
+        if (ws2811->channel[chan].count > max)
         {
-            dma_page_remove_all(head);
-            munmap(vaddr, pages * PAGE_SIZE);
-            return NULL;
+            max = ws2811->channel[chan].count;
         }
     }
 
-    return vaddr;
+    return max;
 }
 
-static dma_cb_t *dma_desc_alloc(uint32_t descriptors)
-{
-    uint32_t pages = ((descriptors * sizeof(dma_cb_t)) / PAGE_SIZE);
-    dma_cb_t *vaddr;
-
-    if (pages > 1)
-    {
-        return NULL;
-    }
-
-    vaddr = mmap(NULL, pages * PAGE_SIZE,
-                 PROT_READ | PROT_WRITE,
-                 MAP_SHARED | MAP_ANONYMOUS | MAP_NORESERVE |
-                 MAP_LOCKED, -1, 0);
-    if (vaddr == MAP_FAILED)
-    {
-        perror("dma_desc_alloc() mmap() failed");
-        return NULL;
-    }
-
-    return vaddr;
-}
-
-static void dma_page_free(void *buffer, const uint32_t size)
-{
-    uint32_t pages = (size / PAGE_SIZE) + 1;
-
-    munmap(buffer, pages * PAGE_SIZE);
-}
-
+/**
+ * Map a physical address and length into userspace virtual memory.
+ *
+ * @param    phys  Physical 32-bit address of device registers.
+ * @param    len   Length of mapped region.
+ *
+ * @returns  Virtual address pointer to physical memory region, NULL on error.
+ */
 static void *map_device(const uint32_t phys, const uint32_t len)
 {
     uint32_t start_page_addr = phys & PAGE_MASK;
@@ -283,6 +141,14 @@ static void *map_device(const uint32_t phys, const uint32_t len)
     return (void *)(((uint8_t *)virt) + PAGE_OFFSET(phys));
 }
 
+/**
+ * Unmap a physical address and length from virtual memory.
+ *
+ * @param    addr  Virtual address pointer of device registers.
+ * @param    len   Length of mapped region.
+ *
+ * @returns  None
+ */
 static void unmap_device(volatile void *addr, const uint32_t len)
 {
     uint32_t virt = (uint32_t)addr;
@@ -293,16 +159,24 @@ static void unmap_device(volatile void *addr, const uint32_t len)
     munmap((void *)addr, PAGE_SIZE * pages);
 }
 
+/**
+ * Map all devices into userspace memory.
+ *
+ * @param    ws2811  ws2811 instance pointer.
+ *
+ * @returns  0 on success, -1 otherwise.
+ */
 static int map_registers(ws2811_t *ws2811)
 {
     ws2811_device_t *device = ws2811->device;
+    uint32_t dma_addr = dmanum_to_phys(ws2811->dmanum);
 
-    if (ws2811->dmanum >= ARRAY_SIZE(dma_addr))
+    if (!dma_addr)
     {
         return -1;
     }
 
-    device->dma = map_device(dma_addr[ws2811->dmanum], sizeof(dma_t));
+    device->dma = map_device(dma_addr, sizeof(dma_t));
     if (!device->dma)
     {
         return -1;
@@ -329,6 +203,13 @@ static int map_registers(ws2811_t *ws2811)
     return 0;
 }
 
+/**
+ * Unmap all devices from virtual memory.
+ *
+ * @param    ws2811  ws2811 instance pointer.
+ *
+ * @returns  None
+ */
 static void unmap_registers(ws2811_t *ws2811)
 {
     ws2811_device_t *device = ws2811->device;
@@ -354,6 +235,14 @@ static void unmap_registers(ws2811_t *ws2811)
     }
 }
 
+/**
+ * Given a userspace address pointer, return the matching bus address used by DMA.
+ *     Note: The bus address is not the same as the CPU physical address.
+ *
+ * @param    addr   Userspace virtual address pointer.
+ *
+ * @returns  Bus address for use by DMA.
+ */
 static uint32_t addr_to_bus(const volatile void *addr)
 {
     char filename[40];
@@ -388,6 +277,13 @@ static uint32_t addr_to_bus(const volatile void *addr)
     return ((uint32_t)pfn << 12) | 0x40000000 | ((uint32_t)addr & 0xfff);
 }
 
+/**
+ * Stop the PWM controller.
+ *
+ * @param    ws2811  ws2811 instance pointer.
+ *
+ * @returns  None
+ */
 static void stop_pwm(ws2811_t *ws2811)
 {
     ws2811_device_t *device = ws2811->device;
@@ -405,6 +301,13 @@ static void stop_pwm(ws2811_t *ws2811)
         ;
 }
 
+/**
+ * Setup the PWM controller in serial mode on both channels using DMA to feed the PWM FIFO.
+ *
+ * @param    ws2811  ws2811 instance pointer.
+ *
+ * @returns  None
+ */
 static int setup_pwm(ws2811_t *ws2811)
 {
     ws2811_device_t *device = ws2811->device;
@@ -412,7 +315,7 @@ static int setup_pwm(ws2811_t *ws2811)
     volatile dma_cb_t *dma_cb = device->dma_cb;
     volatile pwm_t *pwm = device->pwm;
     volatile cm_pwm_t *cm_pwm = device->cm_pwm;
-    int count = ws2811->count;
+    int maxcount = max_channel_led_count(ws2811);
     uint32_t freq = ws2811->freq;
     dma_page_t *page;
     int32_t byte_count;
@@ -427,21 +330,26 @@ static int setup_pwm(ws2811_t *ws2811)
     while (!(cm_pwm->ctl & CM_PWM_CTL_BUSY))
         ;
 
-    // Setup the PWM, use delays as the block is rumored to lock without them
+    // Setup the PWM, use delays as the block is rumored to lock up without them.  Make
+    // sure to use a high enough priority to avoid any FIFO underruns, especially if
+    // the CPU is busy doing lots of memory accesses, or another DMA controller is
+    // busy.  The FIFO will clock out data at a much slower rate (2.6Mhz max), so
+    // the odds of a DMA priority boost are extremely low.
+
     pwm->rng1 = 32;  // 32-bits per word to serialize
     usleep(10);
     pwm->ctl = RPI_PWM_CTL_CLRF1;
     usleep(10);
     pwm->dmac = RPI_PWM_DMAC_ENAB | RPI_PWM_DMAC_PANIC(7) | RPI_PWM_DMAC_DREQ(3);
     usleep(10);
-    pwm->ctl = RPI_PWM_CTL_USEF1 | RPI_PWM_CTL_MODE1;
+    pwm->ctl = RPI_PWM_CTL_USEF1 | RPI_PWM_CTL_MODE1 |
+               RPI_PWM_CTL_USEF2 | RPI_PWM_CTL_MODE2;
     usleep(10);
-    pwm->ctl |= RPI_PWM_CTL_PWEN1;
-    usleep(10);
+    pwm->ctl |= RPI_PWM_CTL_PWEN1 | RPI_PWM_CTL_PWEN2;
 
     // Initialize the DMA control blocks to chain together all the DMA pages
     page = &device->page_head;
-    byte_count = PWM_BYTE_COUNT(count, freq);
+    byte_count = PWM_BYTE_COUNT(maxcount, freq);
     while ((page = dma_page_next(&device->page_head, page)) &&
            byte_count)
     {
@@ -482,6 +390,14 @@ static int setup_pwm(ws2811_t *ws2811)
     return 0;
 }
 
+/**
+ * Start the DMA feeding the PWM FIFO.  This will stream the entire DMA buffer out of both
+ * PWM channels.
+ *
+ * @param    ws2811  ws2811 instance pointer.
+ *
+ * @returns  None
+ */
 static void dma_start(ws2811_t *ws2811)
 {
     ws2811_device_t *device = ws2811->device;
@@ -495,115 +411,227 @@ static void dma_start(ws2811_t *ws2811)
               RPI_DMA_CS_ACTIVE;
 }
 
+/**
+ * Initialize the application selected GPIO pins for PWM operation.
+ *
+ * @param    ws2811  ws2811 instance pointer.
+ *
+ * @returns  0 on success, -1 on unsupported pin
+ */
 static int gpio_init(ws2811_t *ws2811)
 {
     volatile gpio_t *gpio = ws2811->device->gpio;
-    int i;
+    int chan;
 
-    for (i = 0; i < ARRAY_SIZE(pwm_pin_table); i++)
+    for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)
     {
-        if (pwm_pin_table[i].pin == ws2811->gpionum)
+        int pinnum = ws2811->channel[chan].gpionum;
+
+        if (pinnum)
         {
-            gpio_function_set(gpio, ws2811->gpionum, pwm_pin_table[i].altnum);
+            int altnum = pwm_pin_alt(chan, pinnum);
 
-            return 0;
+            if (altnum < 0)
+            {
+                return -1;
+            }
+
+            gpio_function_set(gpio, pinnum, altnum);
         }
-    }
-
-    return -1;
-}
-
-// TODO:  Make nasty initialization code more elegant
-int ws2811_init(ws2811_t *ws2811)
-{
-    ws2811->device = malloc(sizeof(*ws2811->device));
-    if (!ws2811->device)
-    {
-        return -1;
-    }
-
-    dma_page_init(&ws2811->device->page_head);
-
-    // Allocate the LED buffers
-    ws2811->leds = malloc(sizeof(*ws2811->leds) * ws2811->count);
-    if (!ws2811->leds)
-    {
-        free(ws2811->device);
-        return -1;
-    }
-    memset(ws2811->leds, 0, sizeof(*ws2811->leds) * ws2811->count);
-
-    // Allocate the DMA buffer
-    ws2811->device->pwm_raw = dma_alloc(&ws2811->device->page_head, PWM_BYTE_COUNT(ws2811->count, ws2811->freq));
-    if (!ws2811->device->pwm_raw)
-    {
-        free(ws2811->leds);
-        free(ws2811->device);
-        return -1;
-    }
-    memset((uint8_t *)ws2811->device->pwm_raw, 0, PWM_BYTE_COUNT(ws2811->count, ws2811->freq));
-    if (ws2811->invert)
-    {
-        memset((uint8_t *)ws2811->device->pwm_raw, 0xff, PWM_BYTE_COUNT(ws2811->count, ws2811->freq));
-    }
-
-    // Allocate the DMA control block
-    ws2811->device->dma_cb = dma_desc_alloc(MAX_PAGES);
-    if (!ws2811->device->dma_cb)
-    {
-        dma_page_free((uint8_t *)ws2811->device->pwm_raw, PWM_BYTE_COUNT(ws2811->count, ws2811->freq));
-        free(ws2811->leds);
-        free(ws2811->device);
-        return -1;
-    }
-    memset((dma_cb_t *)ws2811->device->dma_cb, 0, sizeof(dma_cb_t));
-
-    // Cache the DMA control block bus address
-    ws2811->device->dma_cb_addr = addr_to_bus(ws2811->device->dma_cb);
-    if (ws2811->device->dma_cb_addr == ~0L)
-    {
-        dma_page_free((uint8_t *)ws2811->device->pwm_raw, PWM_BYTE_COUNT(ws2811->count, ws2811->freq));
-        dma_page_free((dma_cb_t *)ws2811->device->dma_cb, sizeof(dma_cb_t));
-        free(ws2811->leds);
-        free(ws2811->device);
-        return -1;
-    }
-
-    // Map the physical registers into userspace
-    if (map_registers(ws2811))
-    {
-        dma_page_free((uint8_t *)ws2811->device->pwm_raw, PWM_BYTE_COUNT(ws2811->count, ws2811->freq));
-        dma_page_free((dma_cb_t *)ws2811->device->dma_cb, sizeof(dma_cb_t));
-        free(ws2811->leds);
-        free(ws2811->device);
-        return -1;
-    }
-
-    // Map the GPIO pin
-    if (gpio_init(ws2811))
-    {
-        unmap_registers(ws2811);
-        dma_page_free((uint8_t *)ws2811->device->pwm_raw, PWM_BYTE_COUNT(ws2811->count, ws2811->freq));
-        dma_page_free((dma_cb_t *)ws2811->device->dma_cb, sizeof(dma_cb_t));
-        free(ws2811->leds);
-        free(ws2811->device);
-        return -1;
-    }
-
-    // Setup the PWM and clocks
-    if (setup_pwm(ws2811))
-    {
-        unmap_registers(ws2811);
-        dma_page_free((uint8_t *)ws2811->device->pwm_raw, PWM_BYTE_COUNT(ws2811->count, ws2811->freq));
-        dma_page_free((dma_cb_t *)ws2811->device->dma_cb, sizeof(dma_cb_t));
-        free(ws2811->leds);
-        free(ws2811->device);
-        return -1;
     }
 
     return 0;
 }
 
+/**
+ * Initialize the PWM DMA buffer with all zeros for non-inverted operation, or
+ * ones for inverted operation.  The DMA buffer length is assumed to be a word 
+ * multiple.
+ *
+ * @param    ws2811  ws2811 instance pointer.
+ *
+ * @returns  None
+ */
+void pwm_raw_init(ws2811_t *ws2811)
+{
+    volatile uint32_t *pwm_raw = (uint32_t *)ws2811->device->pwm_raw;
+    int maxcount = max_channel_led_count(ws2811);
+    int wordcount = (PWM_BYTE_COUNT(maxcount, ws2811->freq) / sizeof(uint32_t)) /
+                    RPI_PWM_CHANNELS;
+    int chan;
+
+    for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)
+    {
+        ws2811_channel_t *channel = &ws2811->channel[chan];
+        int i, wordpos = chan;
+
+        for (i = 0; i < wordcount; i++)
+        {
+            if (channel->invert)
+            {
+                pwm_raw[wordpos] = ~0L;
+            }
+            else
+            {
+                pwm_raw[wordpos] = 0x0;
+            }
+
+            wordpos += 2;
+        }
+    }
+}
+
+/**
+ * Cleanup previously allocated device memory and buffers.
+ *
+ * @param    ws2811  ws2811 instance pointer.
+ *
+ * @returns  None
+ */
+void ws2811_cleanup(ws2811_t *ws2811)
+{
+    ws2811_device_t *device = ws2811->device;
+    int chan;
+
+    if (device->pwm_raw)
+    {
+        dma_page_free((uint8_t *)device->pwm_raw,
+                      PWM_BYTE_COUNT(max_channel_led_count(ws2811),
+                                     ws2811->freq));
+    }
+
+    if (device->dma_cb)
+    {
+        dma_page_free((dma_cb_t *)device->dma_cb, sizeof(dma_cb_t));
+    }
+
+    for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)
+    {
+        if (ws2811->channel[chan].leds)
+        {
+            free(ws2811->channel[chan].leds);
+        }
+    }
+
+    if (device)
+    {
+        free(device);
+    }
+
+}
+
+
+/*
+ *
+ * Application API Functions
+ *
+ */
+
+
+/**
+ * Allocate and initialize memory, buffers, pages, PWM, DMA, and GPIO.
+ *
+ * @param    ws2811  ws2811 instance pointer.
+ *
+ * @returns  0 on success, -1 otherwise.
+ */
+int ws2811_init(ws2811_t *ws2811)
+{
+    ws2811_device_t *device = NULL;
+    int chan;
+
+    ws2811->device = malloc(sizeof(*ws2811->device));
+    if (!ws2811->device)
+    {
+        return -1;
+    }
+    device = ws2811->device;
+
+    // Initialize all pointers to NULL.  Any non-NULL pointers will be freed on cleanup.
+    device->pwm_raw = NULL;
+    device->dma_cb = NULL;
+    for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)
+    {
+        ws2811->channel[chan].leds = NULL;
+    }
+
+    dma_page_init(&device->page_head);
+
+    // Allocate the LED buffers
+    for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)
+    {
+        ws2811_channel_t *channel = &ws2811->channel[chan];
+
+        channel->leds = malloc(sizeof(ws2811_led_t) * channel->count);
+        if (!channel->leds)
+        {
+            goto err;
+        }
+
+        memset(channel->leds, 0, sizeof(ws2811_led_t) * channel->count);
+    }
+
+    // Allocate the DMA buffer
+    device->pwm_raw = dma_alloc(&device->page_head,
+                                PWM_BYTE_COUNT(max_channel_led_count(ws2811),
+                                               ws2811->freq));
+    if (!device->pwm_raw)
+    {
+        goto err;
+    }
+
+    pwm_raw_init(ws2811);
+
+    // Allocate the DMA control block
+    device->dma_cb = dma_desc_alloc(MAX_PAGES);
+    if (!device->dma_cb)
+    {
+        goto err;
+    }
+    memset((dma_cb_t *)device->dma_cb, 0, sizeof(dma_cb_t));
+
+    // Cache the DMA control block bus address
+    device->dma_cb_addr = addr_to_bus(device->dma_cb);
+    if (device->dma_cb_addr == ~0L)
+    {
+        goto err;
+    }
+
+    // Map the physical registers into userspace
+    if (map_registers(ws2811))
+    {
+        goto err;
+    }
+
+    // Initialize the GPIO pins
+    if (gpio_init(ws2811))
+    {
+        unmap_registers(ws2811);
+        goto err;
+    }
+
+    // Setup the PWM, clocks, and DMA
+    if (setup_pwm(ws2811))
+    {
+        unmap_registers(ws2811);
+        goto err;
+    }
+
+    return 0;
+
+err:
+    ws2811_cleanup(ws2811);
+
+    return -1;
+}
+
+/**
+ * Shut down DMA, PWM, and cleanup memory.
+ *
+ * @param    ws2811  ws2811 instance pointer.
+ *
+ * @returns  None
+ */
 void ws2811_fini(ws2811_t *ws2811)
 {
     ws2811_wait(ws2811);
@@ -611,15 +639,16 @@ void ws2811_fini(ws2811_t *ws2811)
 
     unmap_registers(ws2811);
 
-    dma_page_remove_all(&ws2811->device->page_head);
-    dma_page_free((dma_cb_t *)ws2811->device->dma_cb, sizeof(*ws2811->device->dma_cb));
-    dma_page_free((uint8_t *)ws2811->device->pwm_raw, PWM_BYTE_COUNT(ws2811->count,
-                   ws2811->freq));
-
-    free(ws2811->leds);
-    free(ws2811->device);
+    ws2811_cleanup(ws2811);
 }
 
+/**
+ * Wait for any executing DMA operation to complete before returning.
+ *
+ * @param    ws2811  ws2811 instance pointer.
+ *
+ * @returns  0 on success, -1 on DMA competion error
+ */
 int ws2811_wait(ws2811_t *ws2811)
 {
     volatile dma_t *dma = ws2811->device->dma;
@@ -639,61 +668,80 @@ int ws2811_wait(ws2811_t *ws2811)
     return 0;
 }
 
+/**
+ * Render the PWM DMA buffer from the user supplied LED arrays and start the DMA
+ * controller.  This will update all LEDs on both PWM channels.
+ *
+ * @param    ws2811  ws2811 instance pointer.
+ *
+ * @returns  None
+ */
 int ws2811_render(ws2811_t *ws2811)
 {
     volatile uint8_t *pwm_raw = ws2811->device->pwm_raw;
-    int bitpos = 31, wordpos = 0;
-    int i, j, k, l;
+    int maxcount = max_channel_led_count(ws2811);
+    int bitpos = 31;
+    int i, j, k, l, chan;
 
-    for (i = 0; i < ws2811->count; i++)          // Led
+    for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)         // Channel
     {
-        uint8_t color[] =
-        {
-            (ws2811->leds[i] >> 8) & 0xff,       // green
-            (ws2811->leds[i] >> 16) & 0xff,      // red
-            (ws2811->leds[i] >> 0) & 0xff,       // blue
-        };
+        ws2811_channel_t *channel = &ws2811->channel[chan];
+        int wordpos = chan;
 
-        for (j = 0; j < ARRAY_SIZE(color); j++)  // Color
+        for (i = 0; i < channel->count; i++)                // Led
         {
-            for (k = 7; k >= 0; k--)             // Bit
+            uint8_t color[] =
             {
-                uint8_t symbol = SYMBOL_LOW;
+                (channel->leds[i] >> 8) & 0xff,             // green
+                (channel->leds[i] >> 16) & 0xff,            // red
+                (channel->leds[i] >> 0) & 0xff,             // blue
+            };
 
-                if (color[j] & (1 << k))
+            for (j = 0; j < ARRAY_SIZE(color); j++)        // Color
+            {
+                for (k = 7; k >= 0; k--)                   // Bit
                 {
-                    symbol = SYMBOL_HIGH;
-                }
+                    uint8_t symbol = SYMBOL_LOW;
 
-                if (ws2811->invert)
-                {
-                    symbol = ~symbol & 0x7;
-                }
-
-                for (l = 2; l >= 0; l--)         // Symbol
-                {
-                    uint32_t *wordptr = &((uint32_t *)pwm_raw)[wordpos];
-
-                    *wordptr &= ~(1 << bitpos);
-                    if (symbol & (1 << l))
+                    if (color[j] & (1 << k))
                     {
-                        *wordptr |= (1 << bitpos);
+                        symbol = SYMBOL_HIGH;
                     }
 
-                    bitpos--;
-                    if (bitpos < 0)
+                    if (channel->invert)
                     {
-                        wordpos++;
-                        bitpos = 31;
+                        symbol = ~symbol & 0x7;
+                    }
+
+                    for (l = 2; l >= 0; l--)               // Symbol
+                    {
+                        uint32_t *wordptr = &((uint32_t *)pwm_raw)[wordpos];
+
+                        *wordptr &= ~(1 << bitpos);
+                        if (symbol & (1 << l))
+                        {
+                            *wordptr |= (1 << bitpos);
+                        }
+
+                        bitpos--;
+                        if (bitpos < 0)
+                        {
+                            // Every other word is on the same channel
+                            wordpos += 2;
+
+                            bitpos = 31;
+                        }
                     }
                 }
             }
         }
     }
 
+    // Ensure the CPU data cache is flushed before the DMA is started.
     __clear_cache((char *)pwm_raw,
-                  (char *)&pwm_raw[PWM_BYTE_COUNT(ws2811->count, ws2811->freq)]);
+                  (char *)&pwm_raw[PWM_BYTE_COUNT(maxcount, ws2811->freq)]);
 
+    // Wait for any previous DMA operation to complete.
     if (ws2811_wait(ws2811))
     {
         return -1;
