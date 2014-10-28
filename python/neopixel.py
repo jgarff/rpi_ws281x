@@ -1,5 +1,5 @@
 # Adafruit NeoPixel library port to the rpi_ws281x library.
-# Author: Tony DiCola (tony@tonydicola.com)
+# Author: Tony DiCola (tony@tonydicola.com), Jeremy Garff (jer@jers.net)
 import _rpi_ws281x as ws
 
 
@@ -15,9 +15,9 @@ class _LED_Data(object):
 	"""Wrapper class which makes a SWIG LED color data array look and feel like
 	a Python list of integers.
 	"""
-	def __init__(self, size):
+	def __init__(self, channel, size):
 		self.size = size
-		self.data = ws.new_led_data(size)
+		self.channel = channel
 
 	def __getitem__(self, pos):
 		"""Return the 24-bit RGB color value at the provided position or slice
@@ -26,10 +26,10 @@ class _LED_Data(object):
 		# Handle if a slice of positions are passed in by grabbing all the values
 		# and returning them in a list.
 		if isinstance(pos, slice):
-			return [ws.led_data_getitem(self.data, n) for n in range(pos.indices(self.size))]
+			return [ws.ws2811_led_get(self.channe, n) for n in range(pos.indices(self.size))]
 		# Else assume the passed in value is a number to the position.
 		else:
-			return ws.led_data_getitem(self.data, pos)
+			return ws.ws2811_led_get(self.channel, pos)
 
 	def __setitem__(self, pos, value):
 		"""Set the 24-bit RGB color value at the provided position or slice of
@@ -40,15 +40,15 @@ class _LED_Data(object):
 		if isinstance(pos, slice):
 			index = 0
 			for n in range(pos.indices(self.size)):
-				ws.led_data_setitem(self.data, n, value[index])
+				ws.ws2811_led_set(self.channel, n, value[index])
 				index += 1
 		# Else assume the passed in value is a number to the position.
 		else:
-			return ws.led_data_setitem(self.data, pos, value)
+			return ws.ws2811_led_set(self.channel, pos, value)
 
 
 class Adafruit_NeoPixel(object):
-	def __init__(self, num, pin, freq_hz=800000, dma=5, invert=False):
+	def __init__(self, num, pin, freq_hz=800000, dma=5, invert=False, channel=0):
 		"""Class to represent a NeoPixel/WS281x LED display.  Num should be the
 		number of pixels in the display, and pin should be the GPIO pin connected
 		to the display signal line (must be a PWM pin like 18!).  Optional
@@ -58,13 +58,27 @@ class Adafruit_NeoPixel(object):
 		"""
 		# Create ws2811_t structure and fill in parameters.
 		self._leds = ws.new_ws2811_t()
-		ws.ws2811_t_count_set(self._leds, num)
+
+		# Initialize the channels to zero
+		for channum in range(2):
+			chan = ws.ws2811_channel_get(self._leds, channum)
+			ws.ws2811_channel_t_count_set(chan, 0)
+			ws.ws2811_channel_t_gpionum_set(chan, 0)
+			ws.ws2811_channel_t_invert_set(chan, 0)
+
+		# Initialize the channel in use
+		self._channel = ws.ws2811_channel_get(self._leds, channel)
+		ws.ws2811_channel_t_count_set(self._channel, num)
+		ws.ws2811_channel_t_gpionum_set(self._channel, pin)
+		ws.ws2811_channel_t_invert_set(self._channel, 0 if not invert else 1)
+
+		# Initialize the controller
 		ws.ws2811_t_freq_set(self._leds, freq_hz)
 		ws.ws2811_t_dmanum_set(self._leds, dma)
-		ws.ws2811_t_gpionum_set(self._leds, pin)
-		ws.ws2811_t_invert_set(self._leds, 0 if not invert else 1)
-		# Create led data array.
-		self._led_data = _LED_Data(num)
+
+		# Grab the led data array.
+		self._led_data = _LED_Data(self._channel, num)
+
 		# Start at full brightness.
 		self._brightness = 0
 
@@ -74,6 +88,7 @@ class Adafruit_NeoPixel(object):
 			ws.ws2811_fini(self._leds)
 			ws.delete_ws2811_t(self._leds)
 			self._leds = None
+			self._channel = None
 			# Note that ws2811_fini will free the memory used by led_data internally.
 
 	def begin(self):
@@ -83,9 +98,6 @@ class Adafruit_NeoPixel(object):
 		resp = ws.ws2811_init(self._leds)
 		if resp != 0:
 			raise RuntimeError('ws2811_init failed with code {0}'.format(resp))
-		# Set LED data array on the ws2811_t structure.  Be sure to do this AFTER
-		# the init function is called as it clears out the LEDs.
-		ws.ws2811_t_leds_set(self._leds, self._led_data.data)
 		
 	def show(self):
 		"""Update the display with the data from the LED buffer."""
@@ -146,7 +158,7 @@ class Adafruit_NeoPixel(object):
 
 	def numPixels(self):
 		"""Return the number of pixels in the display."""
-		return ws.ws2811_t_count_get(self._leds)
+		return ws.ws2811_channel_t_count_get(self._channel)
 
 	def getPixelColor(self, n):
 		"""Get the 24-bit RGB color value for the LED at position n."""

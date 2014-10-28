@@ -1,5 +1,5 @@
 # Example of low-level Python wrapper for rpi_ws281x library.
-# Author: Tony DiCola (tony@tonydicola.com)
+# Author: Tony DiCola (tony@tonydicola.com), Jeremy Garff (jer@jers.net)
 #
 # This is an example of how to use the SWIG-generated _rpi_ws281x module.
 # You probably don't want to use this unless you are building your own library,
@@ -12,6 +12,7 @@ import time
 import _rpi_ws281x as ws
 
 # LED configuration.
+LED_CHANNEL    = 0
 LED_COUNT      = 16         # How many LEDs to light.
 LED_FREQ_HZ    = 800000     # Frequency of the LED signal.  Should be 800khz or 400khz.
 LED_DMA_NUM    = 5          # DMA channel to use, can be 0-14.
@@ -37,15 +38,22 @@ DOT_COLORS = [  0x200000,   # red
 # Note that this structure will be created on the heap so you need to be careful
 # that you delete its memory by calling delete_ws2811_t when it's not needed.
 leds = ws.new_ws2811_t()
-ws.ws2811_t_count_set(leds, LED_COUNT)
+
+# Initialize all channels to off
+for channum in range(2):
+    channel = ws.ws2811_channel_get(leds, channum)
+    ws.ws2811_channel_t_count_set(channel, 0)
+    ws.ws2811_channel_t_gpionum_set(channel, 0)
+    ws.ws2811_channel_t_invert_set(channel, 0)
+
+channel = ws.ws2811_channel_get(leds, LED_CHANNEL)
+
+ws.ws2811_channel_t_count_set(channel, LED_COUNT)
+ws.ws2811_channel_t_gpionum_set(channel, LED_GPIO)
+ws.ws2811_channel_t_invert_set(channel, LED_INVERT)
+
 ws.ws2811_t_freq_set(leds, LED_FREQ_HZ)
 ws.ws2811_t_dmanum_set(leds, LED_DMA_NUM)
-ws.ws2811_t_gpionum_set(leds, LED_GPIO)
-ws.ws2811_t_invert_set(leds, LED_INVERT)
-
-# Create an array of LED data. You don't need to clean this up because the fini
-# function will free it automatically.
-led_data = ws.new_led_data(LED_COUNT)
 
 # Initialize library with LED configuration.
 resp = ws.ws2811_init(leds)
@@ -55,27 +63,28 @@ if resp != 0:
 # Wrap following code in a try/finally to ensure cleanup functions are called
 # after library is initialized.
 try:
-	# Set LED data array on the ws2811_t structure.  Be sure to do this AFTER the
-	# init function is called as it clears out the LEDs.
-	ws.ws2811_t_leds_set(leds, led_data)
-	# Loop forever or until ctrl-c is pressed.
 	offset = 0
 	while True:
 		# Update each LED color in the buffer.
 		for i in range(LED_COUNT):
 			# Pick a color based on LED position and an offset for animation.
 			color = DOT_COLORS[(i + offset) % len(DOT_COLORS)]
+
 			# Set the LED color buffer value.
-			ws.led_data_setitem(led_data, i, color)
+			ws.ws2811_led_set(channel, i, color)
+
 		# Send the LED color data to the hardware.
 		resp = ws.ws2811_render(leds)
 		if resp != 0:
 			raise RuntimeError('ws2811_render failed with code {0}'.format(resp))
+
 		# Delay for a small period of time.
 		time.sleep(0.25)
+
 		# Increase offset to animate colors moving.  Will eventually overflow, which
 		# is fine.
 		offset += 1
+
 finally:
 	# Ensure ws2811_fini is called before the program quits.
 	ws.ws2811_fini(leds)

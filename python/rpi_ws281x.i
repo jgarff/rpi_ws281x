@@ -1,5 +1,5 @@
 // SWIG interface file to define rpi_ws281x library python wrapper.
-// Author: Tony DiCola (tony@tonydicola.com)
+// Author: Tony DiCola (tony@tonydicola.com), Jeremy Garff (jer@jers.net)
 
 // Define module name rpi_ws281x.  This will actually be imported under
 // the name _rpi_ws281x following the SWIG & Python conventions.
@@ -15,10 +15,34 @@
 #include "../ws2811.h"
 %}
 
-// Have SWIG automatically generate functions to manipulate a uint32_t array
-// of pixel data.  See http://www.swig.org/Doc1.3/Library.html#Library_carrays
-// for details on the functions that will be generated.
-%array_functions(uint32_t, led_data)
-
 // Process ws2811.h header and export all included functions.
 %include "../ws2811.h"
+
+%inline %{
+    uint32_t ws2811_led_get(ws2811_channel_t *channel, int lednum)
+    {
+        if (lednum >= channel->count)
+        {
+            return -1;
+        }
+
+        return channel->leds[lednum];
+    }
+
+    int ws2811_led_set(ws2811_channel_t *channel, int lednum, uint32_t color)
+    {
+        if (lednum >= channel->count)
+        {
+            return -1;
+        }
+
+        channel->leds[lednum] = color;
+
+        return 0;
+    }
+
+    ws2811_channel_t *ws2811_channel_get(ws2811_t *ws, int channelnum)
+    {
+        return &ws->channel[channelnum];
+    }
+%}
