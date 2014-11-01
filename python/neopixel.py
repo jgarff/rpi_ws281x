@@ -26,7 +26,7 @@ class _LED_Data(object):
 		# Handle if a slice of positions are passed in by grabbing all the values
 		# and returning them in a list.
 		if isinstance(pos, slice):
-			return [ws.ws2811_led_get(self.channe, n) for n in range(pos.indices(self.size))]
+			return [ws.ws2811_led_get(self.channel, n) for n in range(pos.indices(self.size))]
 		# Else assume the passed in value is a number to the position.
 		else:
 			return ws.ws2811_led_get(self.channel, pos)
@@ -53,8 +53,9 @@ class Adafruit_NeoPixel(object):
 		number of pixels in the display, and pin should be the GPIO pin connected
 		to the display signal line (must be a PWM pin like 18!).  Optional
 		parameters are freq, the frequency of the display signal in hertz (default
-		800khz), dma, the DMA channel to use (default 5), and invert, a boolean
-		specifying if the signal line should be inverted (default False).
+		800khz), dma, the DMA channel to use (default 5), invert, a boolean
+		specifying if the signal line should be inverted (default False), and
+		channel, the PWM channel to use (defaults to 0).
 		"""
 		# Create ws2811_t structure and fill in parameters.
 		self._leds = ws.new_ws2811_t()
