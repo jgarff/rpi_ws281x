@@ -689,14 +689,15 @@ int ws2811_render(ws2811_t *ws2811)
     {
         ws2811_channel_t *channel = &ws2811->channel[chan];
         int wordpos = chan;
+        int scale   = (channel->brightness & 0xff) + 1;
 
         for (i = 0; i < channel->count; i++)                // Led
         {
             uint8_t color[] =
             {
-                (channel->leds[i] >> 8) & 0xff,             // green
-                (channel->leds[i] >> 16) & 0xff,            // red
-                (channel->leds[i] >> 0) & 0xff,             // blue
+                (((channel->leds[i] >> 8)  & 0xff) * scale) >> 8, // green
+                (((channel->leds[i] >> 16) & 0xff) * scale) >> 8, // red
+                (((channel->leds[i] >> 0)  & 0xff) * scale) >> 8, // blue
             };
 
             for (j = 0; j < ARRAY_SIZE(color); j++)        // Color

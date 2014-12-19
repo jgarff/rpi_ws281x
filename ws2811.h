@@ -45,6 +45,7 @@ typedef struct
     int gpionum;                                 //< GPIO Pin with PWM alternate function, 0 if unused
     int invert;                                  //< Invert output signal
     int count;                                   //< Number of LEDs, 0 if channel is unused
+    int brightness;                              //< Brightness value between 0 and 255
     ws2811_led_t *leds;                          //< LED buffers, allocated by driver based on count
 } ws2811_channel_t;
 
