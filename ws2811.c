@@ -496,8 +496,8 @@ void ws2811_cleanup(ws2811_t *ws2811)
         if (ws2811->channel[chan].leds)
         {
             free(ws2811->channel[chan].leds);
-            ws2811->channel[chan].leds = NULL;
         }
+        ws2811->channel[chan].leds = NULL;
     }
 
     ws2811_device_t *device = ws2811->device;
