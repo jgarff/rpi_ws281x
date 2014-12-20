@@ -490,34 +490,36 @@ void pwm_raw_init(ws2811_t *ws2811)
  */
 void ws2811_cleanup(ws2811_t *ws2811)
 {
-    ws2811_device_t *device = ws2811->device;
     int chan;
-
-    if (device->pwm_raw)
-    {
-        dma_page_free((uint8_t *)device->pwm_raw,
-                      PWM_BYTE_COUNT(max_channel_led_count(ws2811),
-                                     ws2811->freq));
-    }
-
-    if (device->dma_cb)
-    {
-        dma_page_free((dma_cb_t *)device->dma_cb, sizeof(dma_cb_t));
-    }
-
     for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)
     {
         if (ws2811->channel[chan].leds)
         {
             free(ws2811->channel[chan].leds);
         }
+        ws2811->channel[chan].leds = NULL;
     }
 
-    if (device)
-    {
+    ws2811_device_t *device = ws2811->device;
+    if (device) {
+
+        if (device->pwm_raw)
+        {
+            dma_page_free((uint8_t *)device->pwm_raw,
+                          PWM_BYTE_COUNT(max_channel_led_count(ws2811),
+                                         ws2811->freq));
+            device->pwm_raw = NULL;
+        }
+
+        if (device->dma_cb)
+        {
+            dma_page_free((dma_cb_t *)device->dma_cb, sizeof(dma_cb_t));
+            device->dma_cb = NULL;
+        }
+
         free(device);
     }
-
+    ws2811->device = NULL;
 }
 
 
