@@ -17,6 +17,7 @@ LED_COUNT      = 16         # How many LEDs to light.
 LED_FREQ_HZ    = 800000     # Frequency of the LED signal.  Should be 800khz or 400khz.
 LED_DMA_NUM    = 5          # DMA channel to use, can be 0-14.
 LED_GPIO       = 18         # GPIO connected to the LED signal line.  Must support PWM!
+LED_BRIGHTNESS = 255        # Set to 0 for darkest and 255 for brightest
 LED_INVERT     = 0          # Set to 1 to invert the LED signal, good if using NPN
 							# transistor as a 3.3V->5V level converter.  Keep at 0
 							# for a normal/non-inverted signal.
@@ -45,12 +46,14 @@ for channum in range(2):
     ws.ws2811_channel_t_count_set(channel, 0)
     ws.ws2811_channel_t_gpionum_set(channel, 0)
     ws.ws2811_channel_t_invert_set(channel, 0)
+    ws.ws2811_channel_t_brightness_set(channel, 0)
 
 channel = ws.ws2811_channel_get(leds, LED_CHANNEL)
 
 ws.ws2811_channel_t_count_set(channel, LED_COUNT)
 ws.ws2811_channel_t_gpionum_set(channel, LED_GPIO)
 ws.ws2811_channel_t_invert_set(channel, LED_INVERT)
+ws.ws2811_channel_t_brightness_set(channel, LED_BRIGHTNESS)
 
 ws.ws2811_t_freq_set(leds, LED_FREQ_HZ)
 ws.ws2811_t_dmanum_set(leds, LED_DMA_NUM)

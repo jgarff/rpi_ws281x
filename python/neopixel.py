@@ -66,6 +66,8 @@ class Adafruit_NeoPixel(object):
 			ws.ws2811_channel_t_count_set(chan, 0)
 			ws.ws2811_channel_t_gpionum_set(chan, 0)
 			ws.ws2811_channel_t_invert_set(chan, 0)
+			# Start at full brightness.
+			ws.ws2811_channel_t_brightness_set(chan, 255)
 
 		# Initialize the channel in use
 		self._channel = ws.ws2811_channel_get(self._leds, channel)
@@ -79,9 +81,6 @@ class Adafruit_NeoPixel(object):
 
 		# Grab the led data array.
 		self._led_data = _LED_Data(self._channel, num)
-
-		# Start at full brightness.
-		self._brightness = 0
 
 	def __del__(self):
 		# Clean up memory used by the library when not needed anymore.
@@ -120,36 +119,11 @@ class Adafruit_NeoPixel(object):
 
 	def setBrightness(self, brightness):
 		"""Scale each LED in the buffer by the provided brightness.  A brightness
-		of 0 is the darkest and 255 is the brightest.  Note that scaling can have
-		quantization issues (i.e. blowing out to white or black) if used repeatedly!
+		of 0 is the darkest and 255 is the brightest.
 		"""
-		# This is a direct port of the Arduino code.  It can likely be a little more
-		# optimized for clarity since speed doesn't matter as much on the Pi!
-		new_brightness = brightness + 1
-		if new_brightness != self._brightness:
-			old_brightness = self._brightness - 1
-			# Handle if brightness goes negative and should overflow with unsigned types.
-			if old_brightness < 0:
-				old_brightness = 255
-			if old_brightness == 0:
-				scale = 0
-			elif brightness == 255:
-				scale = 65535 / old_brightness
-			else:
-				scale = ((new_brightness << 8) - 1) / old_brightness
-			for i in range(self.numPixels()):
-				# Original code operates on bytes, but pixel data is stored in 32 bit
-				# unsigned ints.  Break each 32 bit value down into its components
-				# and scale them individually, then reassemble and set color.
-				color = self._led_data[i]
-				red   = (color >> 16) & 0xFF
-				green = (color >> 8)  & 0xFF
-				blue  = color         & 0xFF
-				red   = (red * scale)   >> 8
-				green = (green * scale) >> 8
-				blue  = (blue * scale)  >> 8
-				self._led_data[i] = Color(red, green, blue)
-			self._brightness = new_brightness
+		for channum in range(2):
+			chan = ws.ws2811_channel_get(self._leds, channum)
+			ws.ws2811_channel_t_brightness_set(chan, brightness)
 
 	def getPixels(self):
 		"""Return an object which allows access to the LED display data as if 
