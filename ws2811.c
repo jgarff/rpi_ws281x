@@ -257,8 +257,8 @@ static uint32_t addr_to_bus(const volatile void *addr)
         return ~0UL;
     }
 
-    if (lseek(fd, (uint32_t)addr >> 9, SEEK_SET) != 
-        (uint32_t)addr >> 9)
+    if (lseek(fd, ((uint32_t)addr >> 12) << 3, SEEK_SET) != 
+        ((uint32_t)addr >> 12) << 3)
     {
         perror("addr_to_bus() lseek() failed");
         close(fd);
@@ -585,7 +585,8 @@ int ws2811_init(ws2811_t *ws2811)
     pwm_raw_init(ws2811);
 
     // Allocate the DMA control block
-    device->dma_cb = dma_desc_alloc(MAX_PAGES);
+    device->dma_cb = dma_desc_alloc((PWM_BYTE_COUNT(max_channel_led_count(ws2811),
+                                    ws2811->freq) / PAGE_SIZE));
     if (!device->dma_cb)
     {
         goto err;

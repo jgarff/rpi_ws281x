@@ -133,7 +133,7 @@ void dma_page_init(dma_page_t *page)
 void *dma_alloc(dma_page_t *head, uint32_t size)
 {
     uint32_t pages = (size / PAGE_SIZE) + 1;
-    void *vaddr;
+    uint8_t *vaddr;
     int i;
 
     vaddr = mmap(NULL, pages * PAGE_SIZE,
@@ -148,7 +148,7 @@ void *dma_alloc(dma_page_t *head, uint32_t size)
 
     for (i = 0; i < pages; i++)
     {
-        if (!dma_page_add(head, &((uint8_t *)vaddr)[PAGE_SIZE * i]))
+        if (!dma_page_add(head, &vaddr[PAGE_SIZE * i]))
         {
             dma_page_remove_all(head);
             munmap(vaddr, pages * PAGE_SIZE);
@@ -161,13 +161,8 @@ void *dma_alloc(dma_page_t *head, uint32_t size)
 
 dma_cb_t *dma_desc_alloc(uint32_t descriptors)
 {
-    uint32_t pages = ((descriptors * sizeof(dma_cb_t)) / PAGE_SIZE);
+    uint32_t pages = ((descriptors * sizeof(dma_cb_t)) / PAGE_SIZE) + 1;
     dma_cb_t *vaddr;
-
-    if (pages > 1)
-    {
-        return NULL;
-    }
 
     vaddr = mmap(NULL, pages * PAGE_SIZE,
                  PROT_READ | PROT_WRITE,
