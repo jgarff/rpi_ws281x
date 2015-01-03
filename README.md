@@ -74,4 +74,4 @@ and a .deb package soon.
 
 Examplary applications:
 
-- A RPi-based wordclock https://www.youtube.com/watch?v=V9TwvranJnY
+- A RPi-based wordclock https://github.com/bk1285/rpi_wordclock
