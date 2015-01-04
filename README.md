@@ -71,3 +71,7 @@ That's it.  Have fun.  This was a fun little weekend project.  I hope
 you find it useful.  I plan to add some diagrams, waveform scope shots,
 and a .deb package soon.
 
+
+Examplary applications:
+
+- A RPi-based wordclock https://github.com/bk1285/rpi_wordclock
