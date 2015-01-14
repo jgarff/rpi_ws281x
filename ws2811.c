@@ -592,7 +592,7 @@ int ws2811_init(ws2811_t *ws2811)
 
     // Cache the DMA control block bus address
     device->dma_cb_addr = addr_to_bus(device->dma_cb);
-    if (device->dma_cb_addr == (unsigned long)0L)
+    if (device->dma_cb_addr == (unsigned long)~0L)
     {
         goto err;
     }
