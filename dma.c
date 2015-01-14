@@ -42,7 +42,7 @@
 
 
 // DMA address mapping by DMA number index
-const static uint32_t dma_addr[] =
+static const uint32_t dma_addr[] =
 {
     DMA0,
     DMA1,
@@ -146,7 +146,7 @@ void *dma_alloc(dma_page_t *head, uint32_t size)
         return NULL;
     }
 
-    for (i = 0; i < pages; i++)
+    for (i = 0; i < (int)pages; i++)
     {
         if (!dma_page_add(head, &vaddr[PAGE_SIZE * i]))
         {
