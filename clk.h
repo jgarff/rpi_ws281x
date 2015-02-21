@@ -54,7 +54,7 @@ typedef struct {
 } __attribute__ ((packed)) cm_pwm_t;
 
 
-#define CM_PWM                                   (0x201010a0)  // 0x7e1010a0
+#define CM_PWM_OFFSET                            (0x001010a0)
 
 
 #endif /* __CLK_H__ */

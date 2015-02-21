@@ -38,150 +38,42 @@
 #include <sys/stat.h>
 #include <sys/mman.h>
 
+#include "board_info.h"
 #include "dma.h"
 
 
 // DMA address mapping by DMA number index
-const static uint32_t dma_addr[] =
+const static uint32_t dma_offset[] =
 {
-    DMA0,
-    DMA1,
-    DMA2,
-    DMA3,
-    DMA4,
-    DMA5,
-    DMA6,
-    DMA7,
-    DMA8,
-    DMA9,
-    DMA10,
-    DMA11,
-    DMA12,
-    DMA13,
-    DMA14,
-    DMA15,
+    DMA0_OFFSET,
+    DMA1_OFFSET,
+    DMA2_OFFSET,
+    DMA3_OFFSET,
+    DMA4_OFFSET,
+    DMA5_OFFSET,
+    DMA6_OFFSET,
+    DMA7_OFFSET,
+    DMA8_OFFSET,
+    DMA9_OFFSET,
+    DMA10_OFFSET,
+    DMA11_OFFSET,
+    DMA12_OFFSET,
+    DMA13_OFFSET,
+    DMA14_OFFSET,
+    DMA15_OFFSET,
 };
 
 
 uint32_t dmanum_to_phys(int dmanum)
 {
-    int array_size = sizeof(dma_addr) / sizeof(dma_addr[0]);
+    int array_size = sizeof(dma_offset) / sizeof(dma_offset[0]);
 
     if (dmanum >= array_size)
     {
         return 0;
     }
 
-    return dma_addr[dmanum];
-}
-
-
-dma_page_t *dma_page_add(dma_page_t *head, void *addr)
-{
-    dma_page_t *page = malloc(sizeof(dma_page_t));
-
-    if (!page)
-    {
-        return NULL;
-    }
-
-    page->next = head;
-    page->prev = head->prev;
-
-    head->prev->next = page;
-    head->prev = page;
-
-    page->addr = addr;
-
-    return page;
-}
-
-void dma_page_remove(dma_page_t *page)
-{
-    page->prev->next = page->next;
-    page->next->prev = page->prev;
-
-    free(page);
-}
-
-void dma_page_remove_all(dma_page_t *head)
-{
-    while (head->next != head)
-    {
-        dma_page_remove(head->next);
-    }
-}
-
-dma_page_t *dma_page_next(dma_page_t *head, dma_page_t *page)
-{
-    if (page->next != head)
-    {
-        return page->next;
-    }
-
-    return NULL;
-}
-
-void dma_page_init(dma_page_t *page)
-{
-    memset(page, 0, sizeof(*page));
-
-    page->next = page;
-    page->prev = page;
-}
-
-void *dma_alloc(dma_page_t *head, uint32_t size)
-{
-    uint32_t pages = (size / PAGE_SIZE) + 1;
-    uint8_t *vaddr;
-    int i;
-
-    vaddr = mmap(NULL, pages * PAGE_SIZE,
-                 PROT_READ | PROT_WRITE,
-                 MAP_SHARED | MAP_ANONYMOUS | MAP_NORESERVE |
-                 MAP_LOCKED, -1, 0);
-    if (vaddr == MAP_FAILED)
-    {
-        perror("dma_alloc() mmap() failed");
-        return NULL;
-    }
-
-    for (i = 0; i < pages; i++)
-    {
-        if (!dma_page_add(head, &vaddr[PAGE_SIZE * i]))
-        {
-            dma_page_remove_all(head);
-            munmap(vaddr, pages * PAGE_SIZE);
-            return NULL;
-        }
-    }
-
-    return vaddr;
-}
-
-dma_cb_t *dma_desc_alloc(uint32_t descriptors)
-{
-    uint32_t pages = ((descriptors * sizeof(dma_cb_t)) / PAGE_SIZE) + 1;
-    dma_cb_t *vaddr;
-
-    vaddr = mmap(NULL, pages * PAGE_SIZE,
-                 PROT_READ | PROT_WRITE,
-                 MAP_SHARED | MAP_ANONYMOUS | MAP_NORESERVE |
-                 MAP_LOCKED, -1, 0);
-    if (vaddr == MAP_FAILED)
-    {
-        perror("dma_desc_alloc() mmap() failed");
-        return NULL;
-    }
-
-    return vaddr;
-}
-
-void dma_page_free(void *buffer, const uint32_t size)
-{
-    uint32_t pages = (size / PAGE_SIZE) + 1;
-
-    munmap(buffer, pages * PAGE_SIZE);
+    return dma_offset[dmanum] + board_info_peripheral_base_addr();
 }
 
 
