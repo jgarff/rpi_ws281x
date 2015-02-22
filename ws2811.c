@@ -416,7 +416,8 @@ void ws2811_cleanup(ws2811_t *ws2811)
         unmapmem(mbox.virt_addr, mbox.size);
         mem_unlock(mbox.handle, mbox.mem_ref);
         mem_free(mbox.handle, mbox.mem_ref);
-        mbox_close(mbox.handle);
+        if (mbox.handle >= 0)
+            mbox_close(mbox.handle);
         memset(&mbox, 0, sizeof(mbox));
     }
 
@@ -464,13 +465,21 @@ int ws2811_init(ws2811_t *ws2811)
     mbox.size = (mbox.size + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
 
     // Use the mailbox interface to request memory from the VideoCore
-    mbox.handle = mbox_open("/dev/ws2811_mb");
-    if (mbox.handle < 0)
-        return -1;
+    // We specifiy (-1) for the handle rather than calling mbox_open()
+    // so multiple users can share the resource.
+    mbox.handle = -1; // mbox_open();
     mbox.mem_ref = mem_alloc(mbox.handle, mbox.size, PAGE_SIZE,
             board_info_sdram_address() == 0x40000000 ? 0xC : 0x4);
-    /* TODO: How to detect failures? */
+    if (mbox.mem_ref < 0)
+    {
+       return -1;
+    }
     mbox.bus_addr = mem_lock(mbox.handle, mbox.mem_ref);
+    if (mbox.bus_addr == ~0)
+    {
+       mem_free(mbox.handle, mbox.size);
+       return -1;
+    }
     mbox.virt_addr = mapmem(BUS_TO_PHYS(mbox.bus_addr), mbox.size);
 
     // Initialize all pointers to NULL.  Any non-NULL pointers will be freed on cleanup.

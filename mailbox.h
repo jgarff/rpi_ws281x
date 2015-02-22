@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MAJOR_NUM 100
 #define IOCTL_MBOX_PROPERTY _IOWR(MAJOR_NUM, 0, char *)
 
-int mbox_open(const char *filename);
+int mbox_open(void);
 void mbox_close(int file_desc);
 
 unsigned get_version(int file_desc);
