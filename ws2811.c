@@ -345,6 +345,22 @@ static int setup_pwm(ws2811_t *ws2811)
     pwm->ctl = RPI_PWM_CTL_USEF1 | RPI_PWM_CTL_MODE1 |
                RPI_PWM_CTL_USEF2 | RPI_PWM_CTL_MODE2;
     usleep(10);
+   
+    // Let the PWM handle inversion for us -> that's cleaner
+    if (ws2811->channel[0].invert) {
+        pwm->ctl |= RPI_PWM_CTL_POLA1;
+    } else {
+        pwm->ctl &= ~RPI_PWM_CTL_POLA1;
+    }
+    usleep(100);
+    
+    if (ws2811->channel[1].invert) {
+        pwm->ctl |= RPI_PWM_CTL_POLA2;
+    } else {
+        pwm->ctl &= ~RPI_PWM_CTL_POLA2;
+    }
+    usleep(100);
+   
     pwm->ctl |= RPI_PWM_CTL_PWEN1 | RPI_PWM_CTL_PWEN2;
 
     // Initialize the DMA control blocks to chain together all the DMA pages
@@ -444,9 +460,8 @@ static int gpio_init(ws2811_t *ws2811)
 }
 
 /**
- * Initialize the PWM DMA buffer with all zeros for non-inverted operation, or
- * ones for inverted operation.  The DMA buffer length is assumed to be a word 
- * multiple.
+ * Initialize the PWM DMA buffer with all zeros.
+ * The DMA buffer length is assumed to be a word multiple.
  *
  * @param    ws2811  ws2811 instance pointer.
  *
@@ -462,19 +477,11 @@ void pwm_raw_init(ws2811_t *ws2811)
 
     for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)
     {
-        ws2811_channel_t *channel = &ws2811->channel[chan];
         int i, wordpos = chan;
 
         for (i = 0; i < wordcount; i++)
         {
-            if (channel->invert)
-            {
-                pwm_raw[wordpos] = ~0L;
-            }
-            else
-            {
-                pwm_raw[wordpos] = 0x0;
-            }
+            pwm_raw[wordpos] = 0L;
 
             wordpos += 2;
         }
@@ -710,11 +717,6 @@ int ws2811_render(ws2811_t *ws2811)
                     if (color[j] & (1 << k))
                     {
                         symbol = SYMBOL_HIGH;
-                    }
-
-                    if (channel->invert)
-                    {
-                        symbol = ~symbol & 0x7;
                     }
 
                     for (l = 2; l >= 0; l--)               // Symbol
