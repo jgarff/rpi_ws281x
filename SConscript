@@ -42,6 +42,8 @@ lib_srcs = Split('''
 ws2811_lib = tools_env.Library('libws2811', lib_srcs)
 tools_env['LIBS'].append(ws2811_lib)
 
+# Shared library (if required)
+ws2811_slib = tools_env.SharedLibrary('libws2811', lib_srcs)
 
 # Test Program
 srcs = Split('''
