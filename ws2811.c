@@ -362,7 +362,7 @@ static int setup_pwm(ws2811_t *ws2811)
                      RPI_DMA_TI_SRC_INC;          // Increment src addr
 
         dma_cb->source_ad = addr_to_bus(page->addr);
-        if (dma_cb->source_ad == ~0L)
+        if (dma_cb->source_ad == (unsigned long)~0L)
         {
             return -1;
         }
@@ -595,7 +595,7 @@ int ws2811_init(ws2811_t *ws2811)
 
     // Cache the DMA control block bus address
     device->dma_cb_addr = addr_to_bus(device->dma_cb);
-    if (device->dma_cb_addr == ~0L)
+    if (device->dma_cb_addr == (unsigned long)~0L)
     {
         goto err;
     }
@@ -701,7 +701,7 @@ int ws2811_render(ws2811_t *ws2811)
                 (((channel->leds[i] >> 0)  & 0xff) * scale) >> 8, // blue
             };
 
-            for (j = 0; j < ARRAY_SIZE(color); j++)        // Color
+            for (j = 0; j < (int) ARRAY_SIZE(color); j++)        // Color
             {
                 for (k = 7; k >= 0; k--)                   // Bit
                 {
