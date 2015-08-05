@@ -46,7 +46,7 @@ typedef struct
     uint32_t stride;
     uint32_t nextconbk;
     uint32_t resvd_0x18[2];
-} __attribute__((packed)) dma_cb_t;
+} dma_cb_t;
 
 /*
  * DMA register set
@@ -95,7 +95,7 @@ typedef struct
 #define RPI_DMA_STRIDE_S_STRIDE(val)             ((val & 0xffff) << 0)
     uint32_t nextconbk;
     uint32_t debug;
-} __attribute__((packed)) dma_t;
+} dma_t;
 
 
 #define DMA0_OFFSET                              (0x00007000)

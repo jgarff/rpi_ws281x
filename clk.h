@@ -51,7 +51,7 @@ typedef struct {
 #define CM_PWM_DIV_PASSWD                        (0x5a << 24)
 #define CM_PWM_DIV_DIVI(val)                     ((val & 0xfff) << 12)
 #define CM_PWM_DIV_DIVF(val)                     ((val & 0xfff) << 0)
-} __attribute__ ((packed)) cm_pwm_t;
+} cm_pwm_t;
 
 
 #define CM_PWM_OFFSET                            (0x001010a0)
