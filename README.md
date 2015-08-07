@@ -1,3 +1,11 @@
+About this fork
+===============
+
+I decided to create this fork in order to maintain and merge the good parts
+from the several existing forks of the original library by @jgarff.
+This is mainly done to support the development of the node.js-addon
+(`node-rpi-ws281x-native`) that uses this library.
+
 rpi_ws281x
 ==========
 
