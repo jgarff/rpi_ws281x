@@ -37,6 +37,8 @@ lib_srcs = Split('''
     ws2811.c
     pwm.c
     dma.c
+    board_info.c
+    mailbox.c
 ''')
 
 ws2811_lib = tools_env.Library('libws2811', lib_srcs)

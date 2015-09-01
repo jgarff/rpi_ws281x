@@ -99,8 +99,8 @@ typedef struct
 } __attribute__((packed)) pwm_t;
 
 
-#define PWM                                      (0x2020c000)  // 0x7e20c000
-#define PWM_PERIPH                               (0x7e20c000)
+#define PWM_OFFSET                               (0x0020c000)
+#define PWM_PERIPH_PHYS                          (0x7e20c000)
 
 
 typedef struct
