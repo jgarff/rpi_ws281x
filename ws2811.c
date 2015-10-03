@@ -488,12 +488,12 @@ int ws2811_init(ws2811_t *ws2811)
     mbox.handle = -1; // mbox_open();
     mbox.mem_ref = mem_alloc(mbox.handle, mbox.size, PAGE_SIZE,
             board_info_sdram_address() == 0x40000000 ? 0xC : 0x4);
-    if (mbox.mem_ref < 0)
+    if (mbox.mem_ref == (unsigned) ~0)
     {
        return -1;
     }
     mbox.bus_addr = mem_lock(mbox.handle, mbox.mem_ref);
-    if (mbox.bus_addr == ~0)
+    if (mbox.bus_addr == (unsigned) ~0)
     {
        mem_free(mbox.handle, mbox.size);
        return -1;
@@ -632,7 +632,7 @@ int ws2811_render(ws2811_t *ws2811)
                 (((channel->leds[i] >> 0)  & 0xff) * scale) >> 8, // blue
             };
 
-            for (j = 0; j < ARRAY_SIZE(color); j++)        // Color
+            for (j = 0; j < (int) ARRAY_SIZE(color); j++)        // Color
             {
                 for (k = 7; k >= 0; k--)                   // Bit
                 {

@@ -135,7 +135,7 @@ unsigned mem_alloc(int file_desc, unsigned size, unsigned align, unsigned flags)
    p[0] = i*sizeof *p; // actual size
 
    if (mbox_property(file_desc, p) < 0)
-      return -1;
+      return (unsigned) ~0;
    else
       return p[5];
 }
@@ -175,7 +175,7 @@ unsigned mem_lock(int file_desc, unsigned handle)
    p[0] = i*sizeof *p; // actual size
 
    if (mbox_property(file_desc, p) < 0)
-      return ~0;
+      return (unsigned) ~0;
    else
       return p[5];
 }
