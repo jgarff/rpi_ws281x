@@ -43,7 +43,7 @@
 
 
 // DMA address mapping by DMA number index
-const static uint32_t dma_offset[] =
+static const uint32_t dma_offset[] =
 {
     DMA0_OFFSET,
     DMA1_OFFSET,

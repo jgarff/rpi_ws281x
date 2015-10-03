@@ -48,6 +48,7 @@ static unsigned get_dt_ranges(const char *filename, unsigned offset)
          address = buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3] << 0;
       fclose(fp);
    }
+
    return address;
 }
 
@@ -57,7 +58,7 @@ uint32_t board_info_peripheral_base_addr(void)
 
    board_info_init();
 
-   if (address == ~0)
+   if (address == (unsigned) ~0)
    {
       if (board_model == MODEL_B_2)
          return 0x3f000000;
@@ -76,7 +77,7 @@ uint32_t board_info_sdram_address(void)
 
    board_info_init();
 
-   if (address == ~0)
+   if (address == (unsigned)~0)
    {
       if (board_model == MODEL_B_2)
          return 0xc0000000;
