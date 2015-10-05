@@ -269,6 +269,12 @@ int mbox_open(void) {
    int file_desc;
    char filename[64];
 
+   file_desc = open("/dev/vcio", 0);
+   if (file_desc >= 0)
+   {
+       return file_desc;
+   }
+
    // open a char device file used for communicating with kernel mbox driver
    sprintf(filename, "/tmp/mailbox-%d", getpid());
    unlink(filename);

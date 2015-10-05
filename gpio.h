@@ -62,7 +62,7 @@ typedef struct
 } __attribute__((packed)) gpio_t;
 
 
-#define GPIO                                     (0x20200000)  // 0x7e200000
+#define GPIO_OFFSET                              (0x00200000)
 
 
 static inline void gpio_function_set(volatile gpio_t *gpio, uint8_t pin, uint8_t function)
