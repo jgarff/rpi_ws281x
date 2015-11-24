@@ -31,6 +31,9 @@
 #ifndef __WS2811_H__
 #define __WS2811_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #include "rpihw.h"
 #include "pwm.h"
@@ -65,6 +68,9 @@ void ws2811_fini(ws2811_t *ws2811);              //< Tear it all down
 int ws2811_render(ws2811_t *ws2811);             //< Send LEDs off to hardware
 int ws2811_wait(ws2811_t *ws2811);               //< Wait for DMA completion
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* __WS2811_H__ */
 
