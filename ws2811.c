@@ -522,6 +522,11 @@ int ws2811_init(ws2811_t *ws2811)
         }
 
         memset(channel->leds, 0, sizeof(ws2811_led_t) * channel->count);
+
+        if (!channel->strip_type)
+        {
+          channel->strip_type=WS2811_STRIP_RGB;
+        }
     }
 
     device->dma_cb = (dma_cb_t *)device->mbox.virt_addr;
@@ -625,14 +630,17 @@ int ws2811_render(ws2811_t *ws2811)
         ws2811_channel_t *channel = &ws2811->channel[chan];
         int wordpos = chan;
         int scale   = (channel->brightness & 0xff) + 1;
+        int rshift  = (channel->strip_type >> 16) & 0xff;
+        int gshift  = (channel->strip_type >> 8)  & 0xff;
+        int bshift  = (channel->strip_type >> 0)  & 0xff;
 
         for (i = 0; i < channel->count; i++)                // Led
         {
             uint8_t color[] =
             {
-                (((channel->leds[i] >> 8)  & 0xff) * scale) >> 8, // green
-                (((channel->leds[i] >> 16) & 0xff) * scale) >> 8, // red
-                (((channel->leds[i] >> 0)  & 0xff) * scale) >> 8, // blue
+                (((channel->leds[i] >> gshift) & 0xff) * scale) >> 8, // green
+                (((channel->leds[i] >> rshift) & 0xff) * scale) >> 8, // red
+                (((channel->leds[i] >> bshift) & 0xff) * scale) >> 8, // blue
             };
 
             for (j = 0; j < ARRAY_SIZE(color); j++)        // Color

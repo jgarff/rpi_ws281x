@@ -40,6 +40,12 @@ extern "C" {
 
 
 #define WS2811_TARGET_FREQ                       800000   // Can go as low as 400000
+#define WS2811_STRIP_RGB                         0x100800
+#define WS2811_STRIP_RBG                         0x100008
+#define WS2811_STRIP_GRB                         0x081000
+#define WS2811_STRIP_GBR                         0x001008
+#define WS2811_STRIP_BRG                         0x080010
+#define WS2811_STRIP_BGR                         0x000810
 
 struct ws2811_device;
 
@@ -50,6 +56,7 @@ typedef struct
     int invert;                                  //< Invert output signal
     int count;                                   //< Number of LEDs, 0 if channel is unused
     int brightness;                              //< Brightness value between 0 and 255
+    int strip_type;                              //< Strip color layout -- one of WS2811_STRIP_xxx constants
     ws2811_led_t *leds;                          //< LED buffers, allocated by driver based on count
 } ws2811_channel_t;
 
