@@ -390,7 +390,6 @@ void pwm_raw_init(ws2811_t *ws2811)
 
     for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)
     {
-        ws2811_channel_t *channel = &ws2811->channel[chan];
         int i, wordpos = chan;
 
         for (i = 0; i < wordcount; i++)
