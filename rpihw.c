@@ -211,7 +211,7 @@ const rpi_hw_t *rpi_hw_detect(void)
         {
             uint32_t rev;
             char *substr;
-            int i;
+            unsigned i;
 
             substr = strstr(line, ": ");
             if (!substr)

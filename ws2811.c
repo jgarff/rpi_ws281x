@@ -489,13 +489,13 @@ int ws2811_init(ws2811_t *ws2811)
 
     device->mbox.mem_ref = mem_alloc(device->mbox.handle, device->mbox.size, PAGE_SIZE,
                                      rpi_hw->videocore_base == 0x40000000 ? 0xC : 0x4);
-    if (device->mbox.mem_ref < 0)
+    if (device->mbox.mem_ref == 0)
     {
        return -1;
     }
 
     device->mbox.bus_addr = mem_lock(device->mbox.handle, device->mbox.mem_ref);
-    if (device->mbox.bus_addr == ~0UL)
+    if (device->mbox.bus_addr == (uint32_t) ~0UL)
     {
        mem_free(device->mbox.handle, device->mbox.size);
        return -1;
@@ -617,7 +617,8 @@ int ws2811_render(ws2811_t *ws2811)
 {
     volatile uint8_t *pwm_raw = ws2811->device->pwm_raw;
     int bitpos = 31;
-    int i, j, k, l, chan;
+    int i, k, l, chan;
+    unsigned j;
 
     for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)         // Channel
     {
