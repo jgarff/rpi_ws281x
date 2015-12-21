@@ -40,6 +40,7 @@ extern "C" {
 
 
 #define WS2811_TARGET_FREQ                       800000   // Can go as low as 400000
+
 #define WS2811_STRIP_RGB                         0x100800
 #define WS2811_STRIP_RBG                         0x100008
 #define WS2811_STRIP_GRB                         0x081000
