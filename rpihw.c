@@ -47,7 +47,7 @@
 #define VIDEOCORE_BASE_RPI2                      0xc0000000
 
 
-const static rpi_hw_t rpi_hw_info[] = {
+static const rpi_hw_t rpi_hw_info[] = {
     //
     // Model B Rev 1.0
     //
@@ -211,7 +211,7 @@ const rpi_hw_t *rpi_hw_detect(void)
         {
             uint32_t rev;
             char *substr;
-            int i;
+            unsigned i;
 
             substr = strstr(line, ": ");
             if (!substr)

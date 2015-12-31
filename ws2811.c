@@ -279,6 +279,14 @@ static int setup_pwm(ws2811_t *ws2811)
     usleep(10);
     pwm->ctl = RPI_PWM_CTL_USEF1 | RPI_PWM_CTL_MODE1 |
                RPI_PWM_CTL_USEF2 | RPI_PWM_CTL_MODE2;
+    if (ws2811->channel[0].invert)
+    {
+        pwm->ctl |= RPI_PWM_CTL_POLA1;
+    }
+    if (ws2811->channel[1].invert)
+    {
+        pwm->ctl |= RPI_PWM_CTL_POLA2;
+    }
     usleep(10);
     pwm->ctl |= RPI_PWM_CTL_PWEN1 | RPI_PWM_CTL_PWEN2;
 
@@ -364,8 +372,8 @@ static int gpio_init(ws2811_t *ws2811)
 }
 
 /**
- * Initialize the PWM DMA buffer with all zeros for non-inverted operation, or
- * ones for inverted operation.  The DMA buffer length is assumed to be a word 
+ * Initialize the PWM DMA buffer with all zeros, inverted operation will be
+ * handled by hardware.  The DMA buffer length is assumed to be a word
  * multiple.
  *
  * @param    ws2811  ws2811 instance pointer.
@@ -382,20 +390,11 @@ void pwm_raw_init(ws2811_t *ws2811)
 
     for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)
     {
-        ws2811_channel_t *channel = &ws2811->channel[chan];
         int i, wordpos = chan;
 
         for (i = 0; i < wordcount; i++)
         {
-            if (channel->invert)
-            {
-                pwm_raw[wordpos] = ~0L;
-            }
-            else
-            {
-                pwm_raw[wordpos] = 0x0;
-            }
-
+            pwm_raw[wordpos] = 0x0;
             wordpos += 2;
         }
     }
@@ -489,13 +488,13 @@ int ws2811_init(ws2811_t *ws2811)
 
     device->mbox.mem_ref = mem_alloc(device->mbox.handle, device->mbox.size, PAGE_SIZE,
                                      rpi_hw->videocore_base == 0x40000000 ? 0xC : 0x4);
-    if (device->mbox.mem_ref < 0)
+    if (device->mbox.mem_ref == 0)
     {
        return -1;
     }
 
     device->mbox.bus_addr = mem_lock(device->mbox.handle, device->mbox.mem_ref);
-    if (device->mbox.bus_addr == ~0UL)
+    if (device->mbox.bus_addr == (uint32_t) ~0UL)
     {
        mem_free(device->mbox.handle, device->mbox.size);
        return -1;
@@ -522,6 +521,11 @@ int ws2811_init(ws2811_t *ws2811)
         }
 
         memset(channel->leds, 0, sizeof(ws2811_led_t) * channel->count);
+
+        if (!channel->strip_type)
+        {
+          channel->strip_type=WS2811_STRIP_RGB;
+        }
     }
 
     device->dma_cb = (dma_cb_t *)device->mbox.virt_addr;
@@ -617,21 +621,25 @@ int ws2811_render(ws2811_t *ws2811)
 {
     volatile uint8_t *pwm_raw = ws2811->device->pwm_raw;
     int bitpos = 31;
-    int i, j, k, l, chan;
+    int i, k, l, chan;
+    unsigned j;
 
     for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)         // Channel
     {
         ws2811_channel_t *channel = &ws2811->channel[chan];
         int wordpos = chan;
         int scale   = (channel->brightness & 0xff) + 1;
+        int rshift  = (channel->strip_type >> 16) & 0xff;
+        int gshift  = (channel->strip_type >> 8)  & 0xff;
+        int bshift  = (channel->strip_type >> 0)  & 0xff;
 
         for (i = 0; i < channel->count; i++)                // Led
         {
             uint8_t color[] =
             {
-                (((channel->leds[i] >> 8)  & 0xff) * scale) >> 8, // green
-                (((channel->leds[i] >> 16) & 0xff) * scale) >> 8, // red
-                (((channel->leds[i] >> 0)  & 0xff) * scale) >> 8, // blue
+                (((channel->leds[i] >> gshift) & 0xff) * scale) >> 8, // green
+                (((channel->leds[i] >> rshift) & 0xff) * scale) >> 8, // red
+                (((channel->leds[i] >> bshift) & 0xff) * scale) >> 8, // blue
             };
 
             for (j = 0; j < ARRAY_SIZE(color); j++)        // Color
@@ -643,11 +651,6 @@ int ws2811_render(ws2811_t *ws2811)
                     if (color[j] & (1 << k))
                     {
                         symbol = SYMBOL_HIGH;
-                    }
-
-                    if (channel->invert)
-                    {
-                        symbol = ~symbol & 0x7;
                     }
 
                     for (l = 2; l >= 0; l--)               // Symbol
