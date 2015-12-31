@@ -141,7 +141,10 @@ void matrix_bottom(void)
 
 static void ctrl_c_handler(int signum)
 {
+    ledstring.channel[0].brightness = 0;
+    ws2811_render(&ledstring);
     ws2811_fini(&ledstring);
+    exit(0);
 }
 
 static void setup_handlers(void)
@@ -151,7 +154,8 @@ static void setup_handlers(void)
         .sa_handler = ctrl_c_handler,
     };
 
-    sigaction(SIGKILL, &sa, NULL);
+    sigaction(SIGINT, &sa, NULL);
+    sigaction(SIGTERM, &sa, NULL);
 }
 
 int main(int argc, char *argv[])
