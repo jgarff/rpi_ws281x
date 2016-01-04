@@ -74,6 +74,7 @@ void *mapmem(unsigned base, unsigned size)
 
 void *unmapmem(void *addr, unsigned size)
 {
+   addr -= ((unsigned) addr) % PAGE_SIZE;
    int s = munmap(addr, size);
    if (s != 0) {
       printf("munmap error %d\n", s);
