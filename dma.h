@@ -98,22 +98,22 @@ typedef struct
 } __attribute__((packed)) dma_t;
 
 
-#define DMA0                                     (0x20007000)  // 0x7e007000
-#define DMA1                                     (0x20007100)
-#define DMA2                                     (0x20007200)
-#define DMA3                                     (0x20007300)
-#define DMA4                                     (0x20007400)
-#define DMA5                                     (0x20007500)
-#define DMA6                                     (0x20007600)
-#define DMA7                                     (0x20007700)
-#define DMA8                                     (0x20007800)
-#define DMA9                                     (0x20007900)
-#define DMA10                                    (0x20007a00)
-#define DMA11                                    (0x20007b00)
-#define DMA12                                    (0x20007c00)
-#define DMA13                                    (0x20007d00)
-#define DMA14                                    (0x20007e00)
-#define DMA15                                    (0x20e05000)
+#define DMA0_OFFSET                              (0x00007000)
+#define DMA1_OFFSET                              (0x00007100)
+#define DMA2_OFFSET                              (0x00007200)
+#define DMA3_OFFSET                              (0x00007300)
+#define DMA4_OFFSET                              (0x00007400)
+#define DMA5_OFFSET                              (0x00007500)
+#define DMA6_OFFSET                              (0x00007600)
+#define DMA7_OFFSET                              (0x00007700)
+#define DMA8_OFFSET                              (0x00007800)
+#define DMA9_OFFSET                              (0x00007900)
+#define DMA10_OFFSET                             (0x00007a00)
+#define DMA11_OFFSET                             (0x00007b00)
+#define DMA12_OFFSET                             (0x00007c00)
+#define DMA13_OFFSET                             (0x00007d00)
+#define DMA14_OFFSET                             (0x00007e00)
+#define DMA15_OFFSET                             (0x00e05000)
 
 
 #define PAGE_SIZE                                (1 << 12)
@@ -121,25 +121,6 @@ typedef struct
 #define PAGE_OFFSET(page)                        (page & (PAGE_SIZE - 1))
 
 
-typedef struct dma_page
-{
-    struct dma_page *next;
-    struct dma_page *prev;
-    void *addr;
-} dma_page_t;
-
-
-uint32_t dmanum_to_phys(int dmanum);
-
-void dma_page_init(dma_page_t *page);
-dma_page_t *dma_page_add(dma_page_t *head, void *addr);
-void dma_page_remove(dma_page_t *page);
-void dma_page_remove_all(dma_page_t *head);
-dma_page_t *dma_page_next(dma_page_t *head, dma_page_t *page);
-
-void *dma_alloc(dma_page_t *head, uint32_t size);
-dma_cb_t *dma_desc_alloc(uint32_t descriptors);
-void dma_page_free(void *buffer, const uint32_t size);
-
+uint32_t dmanum_to_offset(int dmanum);
 
 #endif /* __DMA_H__ */

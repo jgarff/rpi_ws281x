@@ -51,6 +51,7 @@ def linux_tools(env):
 def linux_flags(env):
     env.MergeFlags({
         'CPPFLAGS' : '''
+            -fPIC
             -g
             -O2
             -Wall

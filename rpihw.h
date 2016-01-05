@@ -1,5 +1,5 @@
 /*
- * dma.c
+ * rpihw.h
  *
  * Copyright (c) 2014 Jeremy Garff <jer @ jers.net>
  *
@@ -15,7 +15,7 @@
  *         provided with the distribution.
  *     3.  Neither the name of the owner nor the names of its contributors may be used to endorse
  *         or promote products derived from this software without specific prior written permission.
- * 
+ *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
  * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE
@@ -28,51 +28,23 @@
  */
 
 
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <unistd.h>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/mman.h>
-
-#include "dma.h"
+#ifndef __RPIHW_H__
+#define __RPIHW_H__
 
 
-// DMA address mapping by DMA number index
-static const uint32_t dma_offset[] =
-{
-    DMA0_OFFSET,
-    DMA1_OFFSET,
-    DMA2_OFFSET,
-    DMA3_OFFSET,
-    DMA4_OFFSET,
-    DMA5_OFFSET,
-    DMA6_OFFSET,
-    DMA7_OFFSET,
-    DMA8_OFFSET,
-    DMA9_OFFSET,
-    DMA10_OFFSET,
-    DMA11_OFFSET,
-    DMA12_OFFSET,
-    DMA13_OFFSET,
-    DMA14_OFFSET,
-    DMA15_OFFSET,
-};
+typedef struct {
+    uint32_t type;
+#define RPI_HWVER_TYPE_UNKNOWN                   0
+#define RPI_HWVER_TYPE_PI1                       1
+#define RPI_HWVER_TYPE_PI2                       2
+    uint32_t hwver;
+    uint32_t periph_base;
+    uint32_t videocore_base;
+    char *desc;
+} rpi_hw_t;
 
 
-uint32_t dmanum_to_offset(int dmanum)
-{
-    int array_size = sizeof(dma_offset) / sizeof(dma_offset[0]);
-
-    if (dmanum >= array_size)
-    {
-        return 0;
-    }
-
-    return dma_offset[dmanum];
-}
+const rpi_hw_t *rpi_hw_detect(void);
 
 
+#endif /* __RPIHW_H__ */
