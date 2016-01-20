@@ -3,3 +3,7 @@
 test
 *.o
 *.a
+*.suo
+/mono/bin
+/mono/obj
+*.user
