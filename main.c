@@ -152,6 +152,7 @@ static void setup_handlers(void)
     };
 
     sigaction(SIGINT, &sa, NULL);
+    sigaction(SIGTERM, &sa, NULL);
 }
 
 int main(int argc, char *argv[])
