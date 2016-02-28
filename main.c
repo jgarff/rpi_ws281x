@@ -151,7 +151,7 @@ static void setup_handlers(void)
         .sa_handler = ctrl_c_handler,
     };
 
-    sigaction(SIGKILL, &sa, NULL);
+    sigaction(SIGINT, &sa, NULL);
 }
 
 int main(int argc, char *argv[])
