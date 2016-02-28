@@ -44,8 +44,8 @@ extern "C" {
 #define WS2811_STRIP_RGB                         0x100800
 #define WS2811_STRIP_RBG                         0x100008
 #define WS2811_STRIP_GRB                         0x081000
-#define WS2811_STRIP_GBR                         0x001008
-#define WS2811_STRIP_BRG                         0x080010
+#define WS2811_STRIP_GBR                         0x080010
+#define WS2811_STRIP_BRG                         0x001008
 #define WS2811_STRIP_BGR                         0x000810
 
 struct ws2811_device;
