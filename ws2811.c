@@ -637,8 +637,8 @@ int ws2811_render(ws2811_t *ws2811)
         {
             uint8_t color[] =
             {
-                (((channel->leds[i] >> gshift) & 0xff) * scale) >> 8, // green
                 (((channel->leds[i] >> rshift) & 0xff) * scale) >> 8, // red
+                (((channel->leds[i] >> gshift) & 0xff) * scale) >> 8, // green
                 (((channel->leds[i] >> bshift) & 0xff) * scale) >> 8, // blue
             };
 
