@@ -82,7 +82,7 @@ if __name__ == '__main__':
 	# Intialize the library (must be called once before other functions).
 	strip.begin()
 
-	print 'Press Ctrl-C to quit.'
+	print ('Press Ctrl-C to quit.')
 	while True:
 		# Color wipe animations.
 		colorWipe(strip, Color(255, 0, 0))  # Red wipe
