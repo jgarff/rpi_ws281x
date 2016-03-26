@@ -83,6 +83,7 @@ ws2811_t ledstring =
 
 ws2811_led_t matrix[WIDTH][HEIGHT];
 
+static uint8_t running = 1;
 
 void matrix_render(void)
 {
@@ -141,7 +142,7 @@ void matrix_bottom(void)
 
 static void ctrl_c_handler(int signum)
 {
-    ws2811_fini(&ledstring);
+    running = 0;
 }
 
 static void setup_handlers(void)
@@ -166,7 +167,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    while (1)
+    while (running)
     {
         matrix_raise();
         matrix_bottom();
