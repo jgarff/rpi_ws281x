@@ -96,7 +96,7 @@ typedef struct
     uint32_t resvd_0x1c;
     uint32_t rng2;
     uint32_t dat2;
-} __attribute__((packed)) pwm_t;
+} __attribute__((packed, aligned(4))) pwm_t;
 
 
 #define PWM_OFFSET                               (0x0020c000)
