@@ -53,8 +53,8 @@
 #define GPIO_PIN                                 18
 #define DMA                                      5
 
-#define WIDTH                                    8
-#define HEIGHT                                   8
+#define WIDTH                                    16
+#define HEIGHT                                   16
 #define LED_COUNT                                (WIDTH * HEIGHT)
 
 
@@ -107,6 +107,19 @@ void matrix_raise(void)
         for (x = 0; x < WIDTH; x++)
         {
             matrix[x][y] = matrix[x][y + 1];
+        }
+    }
+}
+
+void matrix_clear(void)
+{
+    int x, y;
+
+    for (y = 0; y < (HEIGHT ); y++)
+    {
+        for (x = 0; x < WIDTH; x++)
+        {
+            matrix[x][y] = 0;
         }
     }
 }
@@ -182,6 +195,10 @@ int main(int argc, char *argv[])
         // 15 frames /sec
         usleep(1000000 / 15);
     }
+
+    matrix_clear();
+    matrix_render();
+    ws2811_render(&ledstring);
 
     ws2811_fini(&ledstring);
 
