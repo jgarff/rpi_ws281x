@@ -41,12 +41,13 @@ extern "C" {
 
 #define WS2811_TARGET_FREQ                       800000   // Can go as low as 400000
 
-#define WS2811_STRIP_RGB                         0x100800
-#define WS2811_STRIP_RBG                         0x100008
-#define WS2811_STRIP_GRB                         0x081000
-#define WS2811_STRIP_GBR                         0x080010
-#define WS2811_STRIP_BRG                         0x001008
-#define WS2811_STRIP_BGR                         0x000810
+#define SK6812_STRIP_RGBW                        0x18100800
+#define WS2811_STRIP_RGB                         0x00100800
+#define WS2811_STRIP_RBG                         0x00100008
+#define WS2811_STRIP_GRB                         0x00081000
+#define WS2811_STRIP_GBR                         0x00080010
+#define WS2811_STRIP_BRG                         0x00001008
+#define WS2811_STRIP_BGR                         0x00000810
 
 struct ws2811_device;
 

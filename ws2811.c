@@ -54,8 +54,9 @@
 #define OSC_FREQ                                 19200000   // crystal frequency
 
 /* 3 colors, 8 bits per byte, 3 symbols per bit + 55uS low for reset signal */
+#define LED_COLOURS				4
 #define LED_RESET_uS                             55
-#define LED_BIT_COUNT(leds, freq)                ((leds * 3 * 8 * 3) + ((LED_RESET_uS * \
+#define LED_BIT_COUNT(leds, freq)                ((leds * LED_COLOURS * 8 * 3) + ((LED_RESET_uS * \
                                                   (freq * 3)) / 1000000))
 
 // Pad out to the nearest uint32 + 32-bits for idle low/high times the number of channels
@@ -64,8 +65,6 @@
 
 #define SYMBOL_HIGH                              0x6  // 1 1 0
 #define SYMBOL_LOW                               0x4  // 1 0 0
-
-#define ARRAY_SIZE(stuff)                        (sizeof(stuff) / sizeof(stuff[0]))
 
 
 // We use the mailbox interface to request memory from the VideoCore.
@@ -629,6 +628,7 @@ int ws2811_render(ws2811_t *ws2811)
         ws2811_channel_t *channel = &ws2811->channel[chan];
         int wordpos = chan;
         int scale   = (channel->brightness & 0xff) + 1;
+        int wshift  = (channel->strip_type >> 24) & 0xff;
         int rshift  = (channel->strip_type >> 16) & 0xff;
         int gshift  = (channel->strip_type >> 8)  & 0xff;
         int bshift  = (channel->strip_type >> 0)  & 0xff;
@@ -640,9 +640,16 @@ int ws2811_render(ws2811_t *ws2811)
                 (((channel->leds[i] >> rshift) & 0xff) * scale) >> 8, // red
                 (((channel->leds[i] >> gshift) & 0xff) * scale) >> 8, // green
                 (((channel->leds[i] >> bshift) & 0xff) * scale) >> 8, // blue
+                (((channel->leds[i] >> wshift) & 0xff) * scale) >> 8, // white
             };
 
-            for (j = 0; j < ARRAY_SIZE(color); j++)        // Color
+
+            int array_size = 3;	// assume 3
+            if (channel->strip_type == SK6812_STRIP_RGBW) {
+		array_size = 4;	// this strip needs 4
+            }
+
+            for (j = 0; j < array_size; j++)        // Color
             {
                 for (k = 7; k >= 0; k--)                   // Bit
                 {
