@@ -63,7 +63,7 @@ test = tools_env.Program('test', objs + tools_env['LIBS'])
 
 # Install target
 install_prefix = '/usr/local'
-install_include = os.path.join(install_prefix, 'include', 'rpi_ws281x')
+install_include = os.path.join(install_prefix, 'include', 'ws281x')
 install_lib = os.path.join(install_prefix, 'lib')
 
 headers = glob.glob('*.h')
