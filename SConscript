@@ -58,4 +58,15 @@ for src in srcs:
 
 test = tools_env.Program('test', objs + tools_env['LIBS'])
 
-Default([test, ws2811_lib])
+# New Test Program
+newsrcs = Split('''
+    newtest.c
+''')
+
+newobjs = []
+for newsrc in newsrcs:
+   newobjs.append(tools_env.Object(newsrc))
+
+newtest = tools_env.Program('newtest', newobjs + tools_env['LIBS'])
+
+Default([newtest, test, ws2811_lib])
