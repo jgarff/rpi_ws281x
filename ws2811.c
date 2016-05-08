@@ -644,9 +644,9 @@ int ws2811_render(ws2811_t *ws2811)
             };
 
 
-            int array_size = 3;	// assume 3
+            int array_size = 3;	// assume 3 for RGB
             if (channel->strip_type == SK6812_STRIP_RGBW) {
-		array_size = 4;	// this strip needs 4
+		array_size = 4;	// this strip needs 4 - RGB + W
             }
 
             for (j = 0; j < array_size; j++)        // Color
