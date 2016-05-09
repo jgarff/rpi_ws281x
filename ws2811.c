@@ -633,7 +633,7 @@ int ws2811_render(ws2811_t *ws2811)
         int gshift  = (channel->strip_type >> 8)  & 0xff;
         int bshift  = (channel->strip_type >> 0)  & 0xff;
 
-printf ("chan %d, wshift %d rshift %d gshift %d bshift %d \n",chan, wshift,rshift, gshift, bshift);
+//printf ("chan %d, wshift %d rshift %d gshift %d bshift %d \n",chan, wshift,rshift, gshift, bshift);
 
         for (i = 0; i < channel->count; i++)                // Led
         {
@@ -646,7 +646,7 @@ printf ("chan %d, wshift %d rshift %d gshift %d bshift %d \n",chan, wshift,rshif
             };
 
 
-if (i<10) printf ("i %3d red %02x green %02x blue %02x white %02x\n", i, color[0], color[1], color[2], color[3]);
+//if (i<10) printf ("i %3d red %02x green %02x blue %02x white %02x\n", i, color[0], color[1], color[2], color[3]);
             int array_size = 3;	// assume 3 for RGB
             if (channel->strip_type == SK6812_STRIP_RGBW) {
 		array_size = 4;	// this strip needs 4 - RGB + W

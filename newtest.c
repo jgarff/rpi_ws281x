@@ -54,6 +54,7 @@ static char VERSION[] = "testing...";
 
 #define ARRAY_SIZE(stuff)                        (sizeof(stuff) / sizeof(stuff[0]))
 
+// defaults for cmdline options
 #define TARGET_FREQ                              WS2811_TARGET_FREQ
 #define GPIO_PIN                                 18
 #define DMA                                      5
@@ -67,9 +68,7 @@ static char VERSION[] = "testing...";
 #define HEIGHT                                   1
 #define LED_COUNT                                (WIDTH * HEIGHT)
 
-int gpio_pin = 18;
-int dma = 5;
-int strip_type = WS2811_STRIP_RGB;
+int clear_on_exit = 0;
 
 ws2811_t ledstring =
 {
@@ -121,6 +120,19 @@ void matrix_raise(void)
         for (x = 0; x < WIDTH; x++)
         {
             matrix[x][y] = matrix[x][y + 1];
+        }
+    }
+}
+
+void matrix_clear(void)
+{
+    int x, y;
+
+    for (y = 0; y < (HEIGHT ); y++)
+    {
+        for (x = 0; x < WIDTH; x++)
+        {
+            matrix[x][y] = 0;
         }
     }
 }
@@ -181,6 +193,7 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 		{"help", no_argument, 0, 'h'},
 		{"gpio", required_argument, 0, 'g'},
 		{"invert", no_argument, 0, 'i'},
+		{"clear", no_argument, 0, 'i'},
 		{"strip", required_argument, 0, 's'},
 		{"version", no_argument, 0, 'v'},
 		{0, 0, 0, 0}
@@ -190,7 +203,7 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 	{
 
 		index = 0;
-		c = getopt_long(argc, argv, "Dg:his:v", longopts, &index);
+		c = getopt_long(argc, argv, "cg:his:v", longopts, &index);
 
 		if (c == -1)
 			break;
@@ -203,12 +216,13 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 
 		case 'h':
 			fprintf(stderr, "%s version %s\n", argv[0], VERSION);
-			fprintf(stderr, "Usage: %s [-hDgisv]\n"
+			fprintf(stderr, "Usage: %s [-hcgisv]\n"
 				"-h (--help)    - this information\n"
 				"-s (--strip)   - strip type - rgb, grb, gbr, rgbw\n"
 				"-g (--gpio)    - GPIO to use must be one of 10,18,40,52\n"
 				"                 If omitted, default is 18\n"
 				"-i (--invert)  - invert pin output (pulse LOW)\n"
+				"-c (--clear)   - if clear matrix on exit.\n"
 				"-v (--version) - version information\n"
 				, argv[0]);
 			exit(-1);
@@ -244,28 +258,32 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 			ws2811->channel[0].invert=1;
 			break;
 
+		case 'c':
+			clear_on_exit=1;
+			break;
+
 		case 's':
 			if (optarg) {
-				printf ("got strip %s\n", optarg);
-				if (!strncmp("rgb", optarg, 4)) {
+//				printf ("got strip %s\n", optarg);
+				if (!strncasecmp("rgb", optarg, 4)) {
 					ws2811->channel[0].strip_type = WS2811_STRIP_RGB;
 				}
-				else if (!strncmp("rbg", optarg, 4)) {
+				else if (!strncasecmp("rbg", optarg, 4)) {
 					ws2811->channel[0].strip_type = WS2811_STRIP_RBG;
 				}
-				else if (!strncmp("grb", optarg, 4)) {
+				else if (!strncasecmp("grb", optarg, 4)) {
 					ws2811->channel[0].strip_type = WS2811_STRIP_GRB;
 				}
-				else if (!strncmp("gbr", optarg, 4)) {
+				else if (!strncasecmp("gbr", optarg, 4)) {
 					ws2811->channel[0].strip_type = WS2811_STRIP_GBR;
 				}
-				else if (!strncmp("brg", optarg, 4)) {
+				else if (!strncasecmp("brg", optarg, 4)) {
 					ws2811->channel[0].strip_type = WS2811_STRIP_BRG;
 				}
-				else if (!strncmp("bgr", optarg, 4)) {
+				else if (!strncasecmp("bgr", optarg, 4)) {
 					ws2811->channel[0].strip_type = WS2811_STRIP_BGR;
 				}
-				else if (!strncmp("rgbw", optarg, 4)) {
+				else if (!strncasecmp("rgbw", optarg, 4)) {
 					ws2811->channel[0].strip_type = SK6812_STRIP_RGBW;
 				}
 				else {
@@ -315,9 +333,14 @@ int main(int argc, char *argv[])
             break;
         }
 
-	running=0;
         // 15 frames /sec
-//        usleep(1000000 / 15);
+        usleep(1000000 / 15);
+    }
+
+    if (clear_on_exit) {
+	matrix_clear();
+	matrix_render();
+	ws2811_render(&ledstring);
     }
 
     ws2811_fini(&ledstring);
