@@ -152,6 +152,19 @@ ws2811_led_t dotcolors[] =
     0x00200010,  // pink
 };
 
+ws2811_led_t dotcolors_rgbw[] =
+{
+    0x00200000,  // red
+    0x10200000,  // red + W
+    0x00002000,  // green
+    0x10002000,  // green + W
+    0x00000020,  // blue
+    0x10000020,  // blue + W
+    0x00101010,  // white
+    0x10101010,  // white + W
+
+};
+
 void matrix_bottom(void)
 {
     int i;
@@ -164,7 +177,11 @@ void matrix_bottom(void)
             dotspos[i] = 0;
         }
 
-        matrix[dotspos[i] + (height - 1) * width] = dotcolors[i];
+	if (ledstring.channel[0].strip_type == SK6812_STRIP_RGBW) {
+		matrix[dotspos[i] + (height - 1) * width] = dotcolors_rgbw[i];
+	} else {
+		matrix[dotspos[i] + (height - 1) * width] = dotcolors[i];
+	}
     }
 }
 
@@ -390,6 +407,7 @@ int main(int argc, char *argv[])
 
     ws2811_fini(&ledstring);
 
+    printf ("\n");
     return ret;
 }
 
