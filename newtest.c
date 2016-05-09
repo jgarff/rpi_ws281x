@@ -191,6 +191,7 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 	static struct option longopts[] =
 	{
 		{"help", no_argument, 0, 'h'},
+		{"dma", required_argument, 0, 'd'},
 		{"gpio", required_argument, 0, 'g'},
 		{"invert", no_argument, 0, 'i'},
 		{"clear", no_argument, 0, 'i'},
@@ -203,7 +204,7 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 	{
 
 		index = 0;
-		c = getopt_long(argc, argv, "cg:his:v", longopts, &index);
+		c = getopt_long(argc, argv, "cd:g:his:v", longopts, &index);
 
 		if (c == -1)
 			break;
@@ -218,6 +219,7 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 			fprintf(stderr, "%s version %s\n", argv[0], VERSION);
 			fprintf(stderr, "Usage: %s [-hcgisv]\n"
 				"-h (--help)    - this information\n"
+				"-d (--dma)     - dma channel to use (default 5)\n"
 				"-s (--strip)   - strip type - rgb, grb, gbr, rgbw\n"
 				"-g (--gpio)    - GPIO to use must be one of 10,18,40,52\n"
 				"                 If omitted, default is 18\n"
@@ -260,6 +262,19 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 
 		case 'c':
 			clear_on_exit=1;
+			break;
+
+		case 'd':
+			if (optarg) {
+				int dma = atoi(optarg);
+				printf ("got dma %d\n", dma);
+				if (dma < 14) {
+					ws2811->dmanum = dma;
+				} else {
+					printf ("invalid dma %d\n", dma);
+					exit (-1);
+				}
+			}
 			break;
 
 		case 's':
