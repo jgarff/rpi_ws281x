@@ -61,8 +61,10 @@ static char VERSION[] = "testing...";
 //#define STRIP_TYPE				WS2811_STRIP_GBR		// WS2812/SK6812RGB integrated chip+leds
 //#define STRIP_TYPE				SK6812_STRIP_RGBW		// SK6812RGBW (NOT SK6812RGB)
 
-#define WIDTH                                    8
-#define HEIGHT                                   8
+//#define WIDTH                                    8
+//#define HEIGHT                                   8
+#define WIDTH                                    60
+#define HEIGHT                                   1
 #define LED_COUNT                                (WIDTH * HEIGHT)
 
 int gpio_pin = 18;
@@ -126,14 +128,14 @@ void matrix_raise(void)
 int dotspos[] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 ws2811_led_t dotcolors[] =
 {
-    0x200000,  // red
-    0x201000,  // orange
-    0x202000,  // yellow
-    0x002000,  // green
-    0x002020,  // lightblue
-    0x000020,  // blue
-    0x100010,  // purple
-    0x200010,  // pink
+    0x00200000,  // red
+    0x00201000,  // orange
+    0x00202000,  // yellow
+    0x00002000,  // green
+    0x00002020,  // lightblue
+    0x00000020,  // blue
+    0x00100010,  // purple
+    0x00200010,  // pink
 };
 
 void matrix_bottom(void)
@@ -179,7 +181,7 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 		{"help", no_argument, 0, 'h'},
 		{"gpio", required_argument, 0, 'g'},
 		{"invert", no_argument, 0, 'i'},
-		{"pcm", no_argument, 0, 'p'},
+		{"strip", required_argument, 0, 's'},
 		{"version", no_argument, 0, 'v'},
 		{0, 0, 0, 0}
 	};
@@ -188,7 +190,7 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 	{
 
 		index = 0;
-		c = getopt_long(argc, argv, "Dg:hipv", longopts, &index);
+		c = getopt_long(argc, argv, "Dg:his:v", longopts, &index);
 
 		if (c == -1)
 			break;
@@ -201,13 +203,12 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 
 		case 'h':
 			fprintf(stderr, "%s version %s\n", argv[0], VERSION);
-			fprintf(stderr, "Usage: %s [-hDgipv]\n"
+			fprintf(stderr, "Usage: %s [-hDgisv]\n"
 				"-h (--help)    - this information\n"
-				"-D (--daemon)  - Don't daemonize\n"
-				"-g (--gpio)    - comma separated list of GPIOs to use\n"
-				"                 If omitted, default is \"4,17,18,27,21,22,23,24,25\"\n"
+				"-s (--strip)   - strip type - rgb, grb, gbr, rgbw\n"
+				"-g (--gpio)    - GPIO to use must be one of 10,18,40,52\n"
+				"                 If omitted, default is 18\n"
 				"-i (--invert)  - invert pin output (pulse LOW)\n"
-				"-p (--pcm)     - use pcm for dmascheduling\n"
 				"-v (--version) - version information\n"
 				, argv[0]);
 			exit(-1);
@@ -217,16 +218,24 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 
 		case 'g':
 			if (optarg) {
-				const char s[2] = ",";
-				char *token;
-   
-				/* get the first token */
-				token = strtok(optarg, s);
-
-				/* walk through other tokens */
-				while( token != NULL ) 
-				{
-					token = strtok(NULL, s);
+				int gpio = atoi(optarg);
+/*
+	https://www.raspberrypi.org/forums/viewtopic.php?f=91&t=105044
+	PWM0, which can be set to use GPIOs 12, 18, 40, and 52. 
+	Only 12 (pin 32) and 18 (pin 12) are available on the B+/2B
+	PWM1 which can be set to use GPIOs 13, 19, 41, 45 and 53. 
+	Only 13 is available on the B+/2B, on pin 35 (but I think PWM1 is used for something - is it the audio output?)
+*/
+				switch (gpio) {
+					case 10:
+					case 18:
+					case 40:
+					case 52:
+						ws2811->channel[0].gpionum = gpio;
+						break;
+					default:
+						printf ("gpio %d doesnt support PWM0\n",gpio);
+						exit (-1);
 				}
 			}
 			break;
@@ -235,7 +244,35 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 			ws2811->channel[0].invert=1;
 			break;
 
-		case 'p':
+		case 's':
+			if (optarg) {
+				printf ("got strip %s\n", optarg);
+				if (!strncmp("rgb", optarg, 4)) {
+					ws2811->channel[0].strip_type = WS2811_STRIP_RGB;
+				}
+				else if (!strncmp("rbg", optarg, 4)) {
+					ws2811->channel[0].strip_type = WS2811_STRIP_RBG;
+				}
+				else if (!strncmp("grb", optarg, 4)) {
+					ws2811->channel[0].strip_type = WS2811_STRIP_GRB;
+				}
+				else if (!strncmp("gbr", optarg, 4)) {
+					ws2811->channel[0].strip_type = WS2811_STRIP_GBR;
+				}
+				else if (!strncmp("brg", optarg, 4)) {
+					ws2811->channel[0].strip_type = WS2811_STRIP_BRG;
+				}
+				else if (!strncmp("bgr", optarg, 4)) {
+					ws2811->channel[0].strip_type = WS2811_STRIP_BGR;
+				}
+				else if (!strncmp("rgbw", optarg, 4)) {
+					ws2811->channel[0].strip_type = SK6812_STRIP_RGBW;
+				}
+				else {
+					printf ("invalid strip %s\n", optarg);
+					exit (-1);
+				}
+			}
 			break;
 
 		case 'v':
@@ -278,8 +315,9 @@ int main(int argc, char *argv[])
             break;
         }
 
+	running=0;
         // 15 frames /sec
-        usleep(1000000 / 15);
+//        usleep(1000000 / 15);
     }
 
     ws2811_fini(&ledstring);

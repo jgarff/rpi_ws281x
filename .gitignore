@@ -1,5 +1,6 @@
 .sconsign.dblite
 *.pyc
 test
+newtest
 *.o
 *.a
