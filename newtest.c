@@ -1,5 +1,5 @@
 /*
- * main.c
+ * newtest.c
  *
  * Copyright (c) 2014 Jeremy Garff <jer @ jers.net>
  *
