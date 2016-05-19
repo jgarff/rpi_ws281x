@@ -647,14 +647,22 @@ int ws2811_render(ws2811_t *ws2811)
 
 
 //if (i<10) printf ("i %3d red %02x green %02x blue %02x white %02x\n", i, color[0], color[1], color[2], color[3]);
-            int array_size = 3; // assume 3 for RGB
 
             // Forgive me for this monstrosity. I'm sure there must be a better way.
             // This test should be based on LED_COLOURS, but that should be set
             // dynamically, instead of this ever expanding list... 
-            char rgbw_leds[]="SK6812_STRIP_RGBW,SK6812_STRIP_RBGW,SK6812_STRIP_GRBW,SK6812_STRIP_GBRW,SK6812_STRIP_BRGW,SK6812_STRIP_BGRW";
-            if ( strstr(rgbw_leds, channel->strip_type) != NULL ) {
-                array_size = 4; // this strip needs 4 - RGB + W
+            switch (channel->strip_type) {
+                case SK6812_STRIP_RGBW:
+                case SK6812_STRIP_RBGW:
+                case SK6812_STRIP_GRBW:
+                case SK6812_STRIP_GBRW:
+                case SK6812_STRIP_BRGW:
+                case SK6812_STRIP_BGRW:
+                    int array_size = 4; // 4 color LED - R, G, B + W
+                    break;
+                default:
+                    int array_size = 3; // 3 color LED - R, G, B
+                    exit (-1);
             }
 
             // if (channel->strip_type == SK6812_STRIP_RGBW) {
