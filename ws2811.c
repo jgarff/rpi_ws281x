@@ -664,7 +664,7 @@ int ws2811_render(ws2811_t *ws2811)
                     // 4 color LED - R, G, B + W
                     array_size = 4;
                     break;
-                default:
+                // default:
                     // exit (-1);
             }
 
