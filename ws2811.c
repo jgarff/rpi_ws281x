@@ -648,6 +648,9 @@ int ws2811_render(ws2811_t *ws2811)
 
 //if (i<10) printf ("i %3d red %02x green %02x blue %02x white %02x\n", i, color[0], color[1], color[2], color[3]);
 
+            // Assume 3 color LED - R, G, B
+            int array_size = 3;
+
             // Forgive me for this monstrosity. I'm sure there must be a better way.
             // This test should be based on LED_COLOURS, but that should be set
             // dynamically, instead of this ever expanding list... 
@@ -658,10 +661,10 @@ int ws2811_render(ws2811_t *ws2811)
                 case SK6812_STRIP_GBRW:
                 case SK6812_STRIP_BRGW:
                 case SK6812_STRIP_BGRW:
-                    int array_size = 4; // 4 color LED - R, G, B + W
+                    // 4 color LED - R, G, B + W
+                    array_size = 4;
                     break;
                 default:
-                    int array_size = 3; // 3 color LED - R, G, B
                     exit (-1);
             }
 
