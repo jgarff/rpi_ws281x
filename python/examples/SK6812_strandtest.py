@@ -96,7 +96,7 @@ if __name__ == '__main__':
 		theaterChase(strip, Color(127, 0, 0))  # Red theater chase
 		theaterChase(strip, Color(0, 127, 0))  # Green theater chase
 		theaterChase(strip, Color(0, 0, 127))  # Blue theater chase
-		theaterChase(strip, Color(127, 127, 127))  # White theater chase
+		theaterChase(strip, Color(0, 0, 0, 127))  # White theater chase
 		theaterChase(strip, Color(127, 127, 127, 0))  # Composite White theater chase
 		theaterChase(strip, Color(127, 127, 127, 127))  # Composite White + White theater chase
 		# Rainbow animations.
