@@ -37,8 +37,14 @@ if __name__ == '__main__':
 	while True:
 		# Color wipe animations.
 		colorWipe(strip, Color(255, 0, 0), 0)  # Red wipe
+		time.sleep(2)
 		colorWipe(strip, Color(0, 255, 0), 0)  # Blue wipe
+		time.sleep(2)
 		colorWipe(strip, Color(0, 0, 255), 0)  # Green wipe
+		time.sleep(2)
 		colorWipe(strip, Color(0, 0, 0, 255), 0)  # White wipe
+		time.sleep(2)
 		colorWipe(strip, Color(255, 255, 255), 0)  # Composite White wipe
+		time.sleep(2)
 		colorWipe(strip, Color(255, 255, 255, 255), 0)  # Composite White + White LED wipe
+		time.sleep(2)
