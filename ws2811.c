@@ -665,7 +665,7 @@ int ws2811_render(ws2811_t *ws2811)
                     array_size = 4;
                     break;
                 default:
-                    exit (-1);
+                    // exit (-1);
             }
 
             // if (channel->strip_type == SK6812_STRIP_RGBW) {
