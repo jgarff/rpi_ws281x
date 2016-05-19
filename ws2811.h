@@ -41,7 +41,15 @@ extern "C" {
 
 #define WS2811_TARGET_FREQ                       800000   // Can go as low as 400000
 
+// 4 color R, G, B and W ordering
 #define SK6812_STRIP_RGBW                        0x18100800
+#define SK6812_STRIP_RBGW                        0x18100008
+#define SK6812_STRIP_GRBW                        0x18081000
+#define SK6812_STRIP_GBRW                        0x18080010
+#define SK6812_STRIP_BRGW                        0x18001008
+#define SK6812_STRIP_BGRW                        0x18000810
+
+// 3 color R, G and B ordering
 #define WS2811_STRIP_RGB                         0x00100800
 #define WS2811_STRIP_RBG                         0x00100008
 #define WS2811_STRIP_GRB                         0x00081000
@@ -51,7 +59,7 @@ extern "C" {
 
 struct ws2811_device;
 
-typedef uint32_t ws2811_led_t;                   //< 0x00RRGGBB
+typedef uint32_t ws2811_led_t;                   //< 0xWWRRGGBB
 typedef struct
 {
     int gpionum;                                 //< GPIO Pin with PWM alternate function, 0 if unused
@@ -82,4 +90,3 @@ int ws2811_wait(ws2811_t *ws2811);               //< Wait for DMA completion
 #endif
 
 #endif /* __WS2811_H__ */
-
