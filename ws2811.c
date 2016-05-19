@@ -53,8 +53,8 @@
 
 #define OSC_FREQ                                 19200000   // crystal frequency
 
-/* 3 colors, 8 bits per byte, 3 symbols per bit + 55uS low for reset signal */
-#define LED_COLOURS				4
+/* 4 colors (R, G, B + W), 8 bits per byte, 3 symbols per bit + 55uS low for reset signal */
+#define LED_COLOURS                              4
 #define LED_RESET_uS                             55
 #define LED_BIT_COUNT(leds, freq)                ((leds * LED_COLOURS * 8 * 3) + ((LED_RESET_uS * \
                                                   (freq * 3)) / 1000000))
@@ -647,12 +647,30 @@ int ws2811_render(ws2811_t *ws2811)
 
 
 //if (i<10) printf ("i %3d red %02x green %02x blue %02x white %02x\n", i, color[0], color[1], color[2], color[3]);
-            int array_size = 3;	// assume 3 for RGB
-            if (channel->strip_type == SK6812_STRIP_RGBW) {
-		array_size = 4;	// this strip needs 4 - RGB + W
+
+            // Assume 3 color LED - R, G, B
+            int array_size = 3;
+
+            // Forgive me for this monstrosity. I'm sure there must be a better way.
+            // This test should be based on LED_COLOURS, but that should be set
+            // dynamically, instead of this ever expanding list... 
+            switch (channel->strip_type) {
+                case SK6812_STRIP_RGBW:
+                case SK6812_STRIP_RBGW:
+                case SK6812_STRIP_GRBW:
+                case SK6812_STRIP_GBRW:
+                case SK6812_STRIP_BRGW:
+                case SK6812_STRIP_BGRW:
+                    // 4 color LED - R, G, B + W
+                    array_size = 4;
+                    break;
             }
 
-            for (j = 0; j < array_size; j++)        // Color
+            // if (channel->strip_type == SK6812_STRIP_RGBW) {
+            //     array_size = 4; // this strip needs 4 - RGB + W
+            // }
+
+            for (j = 0; j < array_size; j++)               // Color
             {
                 for (k = 7; k >= 0; k--)                   // Bit
                 {
