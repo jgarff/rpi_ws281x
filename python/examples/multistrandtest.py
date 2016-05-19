@@ -15,7 +15,7 @@ LED_1_DMA        = 5       # DMA channel to use for generating signal (try 5)
 LED_1_BRIGHTNESS = 255     # Set to 0 for darkest and 255 for brightest
 LED_1_INVERT     = False   # True to invert the signal (when using NPN transistor level shift)
 LED_1_CHANNEL    = 0
-LED_1_STRIP      = ws.SK6812_STRIP_RGBW	
+LED_1_STRIP      = ws.SK6812_STRIP_GRBW	
 
 LED_2_COUNT      = 16      # Number of LED pixels.
 LED_2_PIN        = 13      # GPIO pin connected to the pixels (must support PWM!).
