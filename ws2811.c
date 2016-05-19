@@ -664,8 +664,6 @@ int ws2811_render(ws2811_t *ws2811)
                     // 4 color LED - R, G, B + W
                     array_size = 4;
                     break;
-                // default:
-                    // exit (-1);
             }
 
             // if (channel->strip_type == SK6812_STRIP_RGBW) {
