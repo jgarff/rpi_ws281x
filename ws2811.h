@@ -57,6 +57,11 @@ extern "C" {
 #define WS2811_STRIP_BRG                         0x00001008
 #define WS2811_STRIP_BGR                         0x00000810
 
+// predefined fixed LED types
+#define WS2812_STRIP    WS2811_STRIP_GRB
+#define SK6812_STRIP    WS2811_STRIP_GRB
+#define SK6812W_STRIP   SK6812_STRIP_GRBW
+
 struct ws2811_device;
 
 typedef uint32_t ws2811_led_t;                   //< 0xWWRRGGBB

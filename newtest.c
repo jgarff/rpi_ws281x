@@ -346,6 +346,9 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 				else if (!strncasecmp("rgbw", optarg, 4)) {
 					ws2811->channel[0].strip_type = SK6812_STRIP_RGBW;
 				}
+				else if (!strncasecmp("grbw", optarg, 4)) {
+					ws2811->channel[0].strip_type = SK6812_STRIP_GRBW;
+				}
 				else {
 					printf ("invalid strip %s\n", optarg);
 					exit (-1);

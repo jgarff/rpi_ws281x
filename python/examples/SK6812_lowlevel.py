@@ -23,7 +23,9 @@ LED_INVERT     = 0          # Set to 1 to invert the LED signal, good if using N
 							# for a normal/non-inverted signal.
 #LED_STRIP      = ws.WS2811_STRIP_RGB
 #LED_STRIP      = ws.WS2811_STRIP_GBR
-LED_STRIP      = ws.SK6812_STRIP_RGBW
+#LED_STRIP      = ws.SK6812_STRIP_RGBW
+LED_STRIP      = ws.SK6812W_STRIP
+
 
 # Define colors which will be used by the example.  Each color is an unsigned
 # 32-bit value where the lower 24 bits define the red, green, blue data (each
