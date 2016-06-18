@@ -46,6 +46,8 @@
 #define VIDEOCORE_BASE_RPI                       0x40000000
 #define VIDEOCORE_BASE_RPI2                      0xc0000000
 
+#define RPI_MANUFACTURER_MASK                    (0xf << 16)
+#define RPI_WARRANTY_MASK                        (0x3 << 24)
 
 static const rpi_hw_t rpi_hw_info[] = {
     //
@@ -279,7 +281,13 @@ const rpi_hw_t *rpi_hw_detect(void)
 
             for (i = 0; i < (sizeof(rpi_hw_info) / sizeof(rpi_hw_info[0])); i++)
             {
-                if (rev == rpi_hw_info[i].hwver)
+                uint32_t hwver = rpi_hw_info[i].hwver;
+
+                // Take out warranty and manufacturer bits
+                hwver &= ~(RPI_WARRANTY_MASK | RPI_MANUFACTURER_MASK);
+                rev &= ~(RPI_WARRANTY_MASK | RPI_MANUFACTURER_MASK);
+                
+                if (rev == hwver)
                 {
                     result = &rpi_hw_info[i];
 
