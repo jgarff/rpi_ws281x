@@ -70,6 +70,4 @@ handler make sure to call ws2811_fini().  It'll make sure that the DMA
 is finished before program execution stops.
 
 That's it.  Have fun.  This was a fun little weekend project.  I hope
-you find it useful.  I plan to add some diagrams, waveform scope shots,
-and a .deb package soon.
-
+you find it useful.
