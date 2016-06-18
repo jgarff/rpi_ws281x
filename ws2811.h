@@ -48,6 +48,7 @@ extern "C" {
 #define SK6812_STRIP_GBRW                        0x18080010
 #define SK6812_STRIP_BRGW                        0x18001008
 #define SK6812_STRIP_BGRW                        0x18000810
+#define SK6812_SHIFT_WMASK                       0xf0000000
 
 // 3 color R, G and B ordering
 #define WS2811_STRIP_RGB                         0x00100800
@@ -58,9 +59,9 @@ extern "C" {
 #define WS2811_STRIP_BGR                         0x00000810
 
 // predefined fixed LED types
-#define WS2812_STRIP    WS2811_STRIP_GRB
-#define SK6812_STRIP    WS2811_STRIP_GRB
-#define SK6812W_STRIP   SK6812_STRIP_GRBW
+#define WS2812_STRIP                             WS2811_STRIP_GRB
+#define SK6812_STRIP                             WS2811_STRIP_GRB
+#define SK6812W_STRIP                            SK6812_STRIP_GRBW
 
 struct ws2811_device;
 

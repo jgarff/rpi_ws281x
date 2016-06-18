@@ -333,7 +333,7 @@ static void dma_start(ws2811_t *ws2811)
     dma->conblk_ad = dma_cb_addr;
     dma->debug = 7; // clear debug error flags
     dma->cs = RPI_DMA_CS_WAIT_OUTSTANDING_WRITES |
-              RPI_DMA_CS_PANIC_PRIORITY(15) | 
+              RPI_DMA_CS_PANIC_PRIORITY(15) |
               RPI_DMA_CS_PRIORITY(15) |
               RPI_DMA_CS_ACTIVE;
 }
@@ -498,7 +498,14 @@ int ws2811_init(ws2811_t *ws2811)
        mem_free(device->mbox.handle, device->mbox.size);
        return -1;
     }
+
     device->mbox.virt_addr = mapmem(BUS_TO_PHYS(device->mbox.bus_addr), device->mbox.size);
+    if (!device->mbox.virt_addr)
+    {
+        mem_unlock(device->mbox.handle, device->mbox.mem_ref);
+        mem_free(device->mbox.handle, device->mbox.size);
+        goto err;
+    }
 
     // Initialize all pointers to NULL.  Any non-NULL pointers will be freed on cleanup.
     device->pwm_raw = NULL;
@@ -633,8 +640,6 @@ int ws2811_render(ws2811_t *ws2811)
         int gshift  = (channel->strip_type >> 8)  & 0xff;
         int bshift  = (channel->strip_type >> 0)  & 0xff;
 
-//printf ("chan %d, wshift %d rshift %d gshift %d bshift %d \n",chan, wshift,rshift, gshift, bshift);
-
         for (i = 0; i < channel->count; i++)                // Led
         {
             uint8_t color[] =
@@ -644,31 +649,14 @@ int ws2811_render(ws2811_t *ws2811)
                 (((channel->leds[i] >> bshift) & 0xff) * scale) >> 8, // blue
                 (((channel->leds[i] >> wshift) & 0xff) * scale) >> 8, // white
             };
+            uint8_t array_size = 3; // Assume 3 color LEDs, RGB
 
-
-//if (i<10) printf ("i %3d red %02x green %02x blue %02x white %02x\n", i, color[0], color[1], color[2], color[3]);
-
-            // Assume 3 color LED - R, G, B
-            int array_size = 3;
-
-            // Forgive me for this monstrosity. I'm sure there must be a better way.
-            // This test should be based on LED_COLOURS, but that should be set
-            // dynamically, instead of this ever expanding list... 
-            switch (channel->strip_type) {
-                case SK6812_STRIP_RGBW:
-                case SK6812_STRIP_RBGW:
-                case SK6812_STRIP_GRBW:
-                case SK6812_STRIP_GBRW:
-                case SK6812_STRIP_BRGW:
-                case SK6812_STRIP_BGRW:
-                    // 4 color LED - R, G, B + W
-                    array_size = 4;
-                    break;
+            // If our shift mask includes the highest nibble, then we have 4
+            // LEDs, RBGW.
+            if (channel->strip_type & SK6812_SHIFT_WMASK)
+            {
+                array_size = 4;
             }
-
-            // if (channel->strip_type == SK6812_STRIP_RGBW) {
-            //     array_size = 4; // this strip needs 4 - RGB + W
-            // }
 
             for (j = 0; j < array_size; j++)               // Color
             {
