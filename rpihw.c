@@ -180,6 +180,13 @@ static const rpi_hw_t rpi_hw_info[] = {
         .videocore_base = VIDEOCORE_BASE_RPI,
         .desc = "Compute Module",
     },
+    {
+        .hwver  = 0x14,
+        .type = RPI_HWVER_TYPE_PI1,
+        .periph_base = PERIPH_BASE_RPI,
+        .videocore_base = VIDEOCORE_BASE_RPI,
+        .desc = "Compute Module",
+    },
 
     //
     // Pi Zero
