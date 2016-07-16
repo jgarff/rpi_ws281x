@@ -48,6 +48,7 @@ static char VERSION[] = "testing...";
 #include "gpio.h"
 #include "dma.h"
 #include "pwm.h"
+#include "version.h"
 
 #include "ws2811.h"
 
