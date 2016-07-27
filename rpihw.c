@@ -303,8 +303,7 @@ unsigned bcm_host_get_sdram_address(void)
     return get_dt_ranges("/proc/device-tree/axi/vc_mem/reg", 8);
 }
 
-const rpi_hw_t *rpi_hw_detect(void)
-{
+const rpi_hw_t *rpi_dt_hw_detect(void){
     // Attempt to auto-detect addresses from device-tree
     unsigned videocore_base = bcm_host_get_sdram_address();
     unsigned peripheral_base = bcm_host_get_peripheral_address();
@@ -313,9 +312,15 @@ const rpi_hw_t *rpi_hw_detect(void)
        
         board_info.periph_base = peripheral_base;
         board_info.videocore_base = videocore_base;
-        
         return &board_info;
+        
     }
+    
+    return NULL;
+}
+
+const rpi_hw_t *rpi_hw_detect(void)
+{
 
     // Fall back to old method
     FILE *f = fopen("/proc/cpuinfo", "r");
