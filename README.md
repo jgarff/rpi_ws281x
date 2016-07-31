@@ -54,6 +54,14 @@ reponsibility for damage, harm, or mistakes.
 - That's it.  You should see a moving rainbow scroll across the
   display.
 
+### Limitations:
+
+Since this library and the onboard Raspberry Pi audio both use the PWM,
+they cannot be used together.  You will need to blacklist the Broadcom
+audio kernel module.  Some distributions use audio by default, even
+if nothing is being played.  If audio is needed, you can use a USB audio
+device instead.
+
 ### Usage:
 
 The API is very simple.  Make sure to create and initialize the ws2811_t
