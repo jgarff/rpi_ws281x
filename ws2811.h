@@ -41,6 +41,20 @@ extern "C" {
 
 #define WS2811_TARGET_FREQ                       800000   // Can go as low as 400000
 
+
+// error codes for ws2811_init
+#define WS2811_ERR_HW_DETECT                    -(28110 + 0)
+#define WS2811_ERR_DEVICE_MALLOC                -(28110 + 1)
+#define WS2811_ERR_MAILBOX_OPEN                 -(28110 + 2)
+#define WS2811_ERR_MAILBOX_ALLOC                -(28110 + 3)
+#define WS2811_ERR_MAILBOX_LOCK                 -(28110 + 4)
+#define WS2811_ERR_MAP_MEM                      -(28110 + 5)
+#define WS2811_ERR_LEDS_MALLOC                  -(28110 + 6)
+#define WS2811_ERR_MAP_REGISTERS                -(28110 + 7)
+#define WS2811_ERR_GPIO_INIT                    -(28110 + 8)
+#define WS2811_ERR_SETUP_PWM                    -(28110 + 9)
+
+
 // 4 color R, G, B and W ordering
 #define SK6812_STRIP_RGBW                        0x18100800
 #define SK6812_STRIP_RBGW                        0x18100008

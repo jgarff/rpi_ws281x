@@ -46,6 +46,8 @@
 #include "pwm.h"
 #include "rpihw.h"
 
+#include "gamma.h"
+
 #include "ws2811.h"
 
 
@@ -458,18 +460,19 @@ int ws2811_init(ws2811_t *ws2811)
     ws2811_device_t *device;
     const rpi_hw_t *rpi_hw;
     int chan;
+    int error = -1;
 
     ws2811->rpi_hw = rpi_hw_detect();
     if (!ws2811->rpi_hw)
     {
-        return -1;
+        return WS2811_ERR_HW_DETECT;
     }
     rpi_hw = ws2811->rpi_hw;
 
     ws2811->device = malloc(sizeof(*ws2811->device));
     if (!ws2811->device)
     {
-        return -1;
+        return WS2811_ERR_DEVICE_MALLOC;
     }
     device = ws2811->device;
 
@@ -482,21 +485,21 @@ int ws2811_init(ws2811_t *ws2811)
     device->mbox.handle = mbox_open();
     if (device->mbox.handle == -1)
     {
-        return -1;
+        return WS2811_ERR_MAILBOX_OPEN;
     }
 
     device->mbox.mem_ref = mem_alloc(device->mbox.handle, device->mbox.size, PAGE_SIZE,
                                      rpi_hw->videocore_base == 0x40000000 ? 0xC : 0x4);
     if (device->mbox.mem_ref == 0)
     {
-       return -1;
+       return WS2811_ERR_MAILBOX_ALLOC;
     }
 
     device->mbox.bus_addr = mem_lock(device->mbox.handle, device->mbox.mem_ref);
     if (device->mbox.bus_addr == (uint32_t) ~0UL)
     {
        mem_free(device->mbox.handle, device->mbox.size);
-       return -1;
+       return WS2811_ERR_MAILBOX_LOCK;
     }
 
     device->mbox.virt_addr = mapmem(BUS_TO_PHYS(device->mbox.bus_addr), device->mbox.size);
@@ -504,6 +507,7 @@ int ws2811_init(ws2811_t *ws2811)
     {
         mem_unlock(device->mbox.handle, device->mbox.mem_ref);
         mem_free(device->mbox.handle, device->mbox.size);
+        error = WS2811_ERR_MAP_MEM;
         goto err;
     }
 
@@ -523,6 +527,7 @@ int ws2811_init(ws2811_t *ws2811)
         channel->leds = malloc(sizeof(ws2811_led_t) * channel->count);
         if (!channel->leds)
         {
+            error = WS2811_ERR_LEDS_MALLOC;
             goto err;
         }
 
@@ -547,6 +552,7 @@ int ws2811_init(ws2811_t *ws2811)
     // Map the physical registers into userspace
     if (map_registers(ws2811))
     {
+        error = WS2811_ERR_MAP_REGISTERS;
         goto err;
     }
 
@@ -554,6 +560,7 @@ int ws2811_init(ws2811_t *ws2811)
     if (gpio_init(ws2811))
     {
         unmap_registers(ws2811);
+        error = WS2811_ERR_GPIO_INIT;
         goto err;
     }
 
@@ -561,6 +568,7 @@ int ws2811_init(ws2811_t *ws2811)
     if (setup_pwm(ws2811))
     {
         unmap_registers(ws2811);
+        error = WS2811_ERR_SETUP_PWM;
         goto err;
     }
 
@@ -569,7 +577,7 @@ int ws2811_init(ws2811_t *ws2811)
 err:
     ws2811_cleanup(ws2811);
 
-    return -1;
+    return error;
 }
 
 /**
@@ -644,10 +652,10 @@ int ws2811_render(ws2811_t *ws2811)
         {
             uint8_t color[] =
             {
-                (((channel->leds[i] >> rshift) & 0xff) * scale) >> 8, // red
-                (((channel->leds[i] >> gshift) & 0xff) * scale) >> 8, // green
-                (((channel->leds[i] >> bshift) & 0xff) * scale) >> 8, // blue
-                (((channel->leds[i] >> wshift) & 0xff) * scale) >> 8, // white
+                ws281x_gamma[(((channel->leds[i] >> rshift) & 0xff) * scale) >> 8], // red
+                ws281x_gamma[(((channel->leds[i] >> gshift) & 0xff) * scale) >> 8], // green
+                ws281x_gamma[(((channel->leds[i] >> bshift) & 0xff) * scale) >> 8], // blue
+                ws281x_gamma[(((channel->leds[i] >> wshift) & 0xff) * scale) >> 8], // white
             };
             uint8_t array_size = 3; // Assume 3 color LEDs, RGB
 
