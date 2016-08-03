@@ -46,6 +46,8 @@
 #include "pwm.h"
 #include "rpihw.h"
 
+#include "gamma.h"
+
 #include "ws2811.h"
 
 
@@ -650,10 +652,10 @@ int ws2811_render(ws2811_t *ws2811)
         {
             uint8_t color[] =
             {
-                (((channel->leds[i] >> rshift) & 0xff) * scale) >> 8, // red
-                (((channel->leds[i] >> gshift) & 0xff) * scale) >> 8, // green
-                (((channel->leds[i] >> bshift) & 0xff) * scale) >> 8, // blue
-                (((channel->leds[i] >> wshift) & 0xff) * scale) >> 8, // white
+                ws281x_gamma[(((channel->leds[i] >> rshift) & 0xff) * scale) >> 8], // red
+                ws281x_gamma[(((channel->leds[i] >> gshift) & 0xff) * scale) >> 8], // green
+                ws281x_gamma[(((channel->leds[i] >> bshift) & 0xff) * scale) >> 8], // blue
+                ws281x_gamma[(((channel->leds[i] >> wshift) & 0xff) * scale) >> 8], // white
             };
             uint8_t array_size = 3; // Assume 3 color LEDs, RGB
 
