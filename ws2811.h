@@ -71,9 +71,13 @@ typedef struct
     int gpionum;                                 //< GPIO Pin with PWM alternate function, 0 if unused
     int invert;                                  //< Invert output signal
     int count;                                   //< Number of LEDs, 0 if channel is unused
-    int brightness;                              //< Brightness value between 0 and 255
     int strip_type;                              //< Strip color layout -- one of WS2811_STRIP_xxx constants
     ws2811_led_t *leds;                          //< LED buffers, allocated by driver based on count
+    uint8_t brightness;                          //< Brightness value between 0 and 255
+    uint8_t wshift;                              //< White shift value
+    uint8_t rshift;                              //< Red shift value
+    uint8_t gshift;                              //< Green shift value
+    uint8_t bshift;                              //< Blue shift value
 } ws2811_channel_t;
 
 typedef struct
