@@ -58,9 +58,13 @@ reponsibility for damage, harm, or mistakes.
 
 Since this library and the onboard Raspberry Pi audio both use the PWM,
 they cannot be used together.  You will need to blacklist the Broadcom
-audio kernel module.  Some distributions use audio by default, even
-if nothing is being played.  If audio is needed, you can use a USB audio
-device instead.
+audio kernel module by creating a file /etc/modprobe.d/snd-blacklist.conf
+with
+
+    blacklist snd_bcm2835
+
+Some distributions use audio by default, even if nothing is being played.
+If audio is needed, you can use a USB audio device instead.
 
 ### Usage:
 
