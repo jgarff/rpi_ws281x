@@ -374,7 +374,7 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 
 int main(int argc, char *argv[])
 {
-    int ret = 0;
+    ws2811_return_t ret;
 
     parseargs(argc, argv, &ledstring);
 
@@ -382,9 +382,10 @@ int main(int argc, char *argv[])
 
     setup_handlers();
 
-    if (ws2811_init(&ledstring))
+    if ((ret = ws2811_init(&ledstring)) != WS2811_SUCCESS)
     {
-        return -1;
+        fprintf(stderr, "ws2811_init failed: %s\n", ws2811_get_return_t_str(ret));
+        return ret;
     }
 
     while (running)
@@ -393,9 +394,9 @@ int main(int argc, char *argv[])
         matrix_bottom();
         matrix_render();
 
-        if (ws2811_render(&ledstring))
+        if ((ret = ws2811_render(&ledstring)) != WS2811_SUCCESS)
         {
-            ret = -1;
+            fprintf(stderr, "ws2811_render failed: %s\n", ws2811_get_return_t_str(ret));
             break;
         }
 

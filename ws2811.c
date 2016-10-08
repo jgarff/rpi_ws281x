@@ -453,7 +453,7 @@ void ws2811_cleanup(ws2811_t *ws2811)
  *
  * @returns  0 on success, -1 otherwise.
  */
-int ws2811_init(ws2811_t *ws2811)
+ws2811_return_t ws2811_init(ws2811_t *ws2811)
 {
     ws2811_device_t *device;
     const rpi_hw_t *rpi_hw;
@@ -462,14 +462,14 @@ int ws2811_init(ws2811_t *ws2811)
     ws2811->rpi_hw = rpi_hw_detect();
     if (!ws2811->rpi_hw)
     {
-        return -1;
+        return WS2811_ERROR_HW_NOT_SUPPORTED;
     }
     rpi_hw = ws2811->rpi_hw;
 
     ws2811->device = malloc(sizeof(*ws2811->device));
     if (!ws2811->device)
     {
-        return -1;
+        return WS2811_ERROR_OUT_OF_MEMORY;
     }
     device = ws2811->device;
 
@@ -482,21 +482,21 @@ int ws2811_init(ws2811_t *ws2811)
     device->mbox.handle = mbox_open();
     if (device->mbox.handle == -1)
     {
-        return -1;
+        return WS2811_ERROR_MAILBOX_DEVICE;
     }
 
     device->mbox.mem_ref = mem_alloc(device->mbox.handle, device->mbox.size, PAGE_SIZE,
                                      rpi_hw->videocore_base == 0x40000000 ? 0xC : 0x4);
     if (device->mbox.mem_ref == 0)
     {
-       return -1;
+        return WS2811_ERROR_OUT_OF_MEMORY;
     }
 
     device->mbox.bus_addr = mem_lock(device->mbox.handle, device->mbox.mem_ref);
     if (device->mbox.bus_addr == (uint32_t) ~0UL)
     {
-       mem_free(device->mbox.handle, device->mbox.size);
-       return -1;
+        mem_free(device->mbox.handle, device->mbox.size);
+        return WS2811_ERROR_MEM_LOCK;
     }
 
     device->mbox.virt_addr = mapmem(BUS_TO_PHYS(device->mbox.bus_addr), device->mbox.size);
@@ -504,7 +504,9 @@ int ws2811_init(ws2811_t *ws2811)
     {
         mem_unlock(device->mbox.handle, device->mbox.mem_ref);
         mem_free(device->mbox.handle, device->mbox.size);
-        goto err;
+
+        ws2811_cleanup(ws2811);
+        return WS2811_ERROR_MMAP;
     }
 
     // Initialize all pointers to NULL.  Any non-NULL pointers will be freed on cleanup.
@@ -523,7 +525,8 @@ int ws2811_init(ws2811_t *ws2811)
         channel->leds = malloc(sizeof(ws2811_led_t) * channel->count);
         if (!channel->leds)
         {
-            goto err;
+            ws2811_cleanup(ws2811);
+            return WS2811_ERROR_OUT_OF_MEMORY;
         }
 
         memset(channel->leds, 0, sizeof(ws2811_led_t) * channel->count);
@@ -552,29 +555,27 @@ int ws2811_init(ws2811_t *ws2811)
     // Map the physical registers into userspace
     if (map_registers(ws2811))
     {
-        goto err;
+        ws2811_cleanup(ws2811);
+        return WS2811_ERROR_MAP_REGISTERS;
     }
 
     // Initialize the GPIO pins
     if (gpio_init(ws2811))
     {
         unmap_registers(ws2811);
-        goto err;
+        ws2811_cleanup(ws2811);
+        return WS2811_ERROR_GPIO_INIT;
     }
 
     // Setup the PWM, clocks, and DMA
     if (setup_pwm(ws2811))
     {
         unmap_registers(ws2811);
-        goto err;
+        ws2811_cleanup(ws2811);
+        return WS2811_ERROR_PWM_SETUP;
     }
 
-    return 0;
-
-err:
-    ws2811_cleanup(ws2811);
-
-    return -1;
+    return WS2811_SUCCESS;
 }
 
 /**
@@ -601,7 +602,7 @@ void ws2811_fini(ws2811_t *ws2811)
  *
  * @returns  0 on success, -1 on DMA competion error
  */
-int ws2811_wait(ws2811_t *ws2811)
+ws2811_return_t ws2811_wait(ws2811_t *ws2811)
 {
     volatile dma_t *dma = ws2811->device->dma;
 
@@ -614,7 +615,7 @@ int ws2811_wait(ws2811_t *ws2811)
     if (dma->cs & RPI_DMA_CS_ERROR)
     {
         fprintf(stderr, "DMA Error: %08x\n", dma->debug);
-        return -1;
+        return WS2811_ERROR_DMA;
     }
 
     return 0;
@@ -628,12 +629,13 @@ int ws2811_wait(ws2811_t *ws2811)
  *
  * @returns  None
  */
-int ws2811_render(ws2811_t *ws2811)
+ws2811_return_t ws2811_render(ws2811_t *ws2811)
 {
     volatile uint8_t *pwm_raw = ws2811->device->pwm_raw;
     int bitpos = 31;
     int i, k, l, chan;
     unsigned j;
+    ws2811_return_t ret;
 
     for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)         // Channel
     {
@@ -695,9 +697,9 @@ int ws2811_render(ws2811_t *ws2811)
     }
 
     // Wait for any previous DMA operation to complete.
-    if (ws2811_wait(ws2811))
+    if ((ret = ws2811_wait(ws2811)) != WS2811_SUCCESS)
     {
-        return -1;
+        return ret;
     }
 
     dma_start(ws2811);
@@ -705,3 +707,15 @@ int ws2811_render(ws2811_t *ws2811)
     return 0;
 }
 
+const char * ws2811_get_return_t_str(const ws2811_return_t state)
+{
+    const int index = -state;
+    static const char * const ret_state_str[] = { WS2811_RETURN_STATES(WS2811_RETURN_STATES_STRING) };
+
+    if (index < sizeof(ret_state_str) / sizeof(ret_state_str[0]))
+    {
+        return ret_state_str[index];
+    }
+
+    return "";
+}
