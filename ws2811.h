@@ -85,11 +85,33 @@ typedef struct
     ws2811_channel_t channel[RPI_PWM_CHANNELS];
 } ws2811_t;
 
+#define WS2811_RETURN_STATES(X)                                                             \
+            X(0, WS2811_SUCCESS, "Success"),                                                \
+            X(-1, WS2811_ERROR_GENERIC, "Generic failure"),                                 \
+            X(-2, WS2811_ERROR_OUT_OF_MEMORY, "Out of memory"),                             \
+            X(-3, WS2811_ERROR_HW_NOT_SUPPORTED, "Hardware revision is not supported"),     \
+            X(-4, WS2811_ERROR_MEM_LOCK, "Memory lock failed"),                             \
+            X(-5, WS2811_ERROR_MMAP, "mmap() failed"),                                      \
+            X(-6, WS2811_ERROR_MAP_REGISTERS, "Unable to map registers into userspace"),    \
+            X(-7, WS2811_ERROR_GPIO_INIT, "Unable to initialize GPIO"),                     \
+            X(-8, WS2811_ERROR_PWM_SETUP, "Unable to initialize PWM"),                      \
+            X(-9, WS2811_ERROR_MAILBOX_DEVICE, "Failed to create mailbox device"),          \
+            X(-10, WS2811_ERROR_DMA, "DMA error")                                           \
 
-int ws2811_init(ws2811_t *ws2811);               //< Initialize buffers/hardware
-void ws2811_fini(ws2811_t *ws2811);              //< Tear it all down
-int ws2811_render(ws2811_t *ws2811);             //< Send LEDs off to hardware
-int ws2811_wait(ws2811_t *ws2811);               //< Wait for DMA completion
+#define WS2811_RETURN_STATES_ENUM(state, name, str) name = state
+#define WS2811_RETURN_STATES_STRING(state, name, str) str
+
+typedef enum {
+    WS2811_RETURN_STATES(WS2811_RETURN_STATES_ENUM),
+
+    WS2811_RETURN_STATE_COUNT
+} ws2811_return_t;
+
+ws2811_return_t ws2811_init(ws2811_t *ws2811);                         //< Initialize buffers/hardware
+void ws2811_fini(ws2811_t *ws2811);                                    //< Tear it all down
+ws2811_return_t ws2811_render(ws2811_t *ws2811);                       //< Send LEDs off to hardware
+ws2811_return_t ws2811_wait(ws2811_t *ws2811);                         //< Wait for DMA completion
+const char * ws2811_get_return_t_str(const ws2811_return_t state);     //< Get string representation of the given return state
 
 #ifdef __cplusplus
 }
