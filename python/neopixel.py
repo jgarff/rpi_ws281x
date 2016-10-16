@@ -98,14 +98,16 @@ class Adafruit_NeoPixel(object):
 		called.
 		"""
 		resp = ws.ws2811_init(self._leds)
-		if resp != 0:
-			raise RuntimeError('ws2811_init failed with code {0}'.format(resp))
+		if resp != ws.WS2811_SUCCESS:
+			message = ws.ws2811_get_return_t_str(resp)
+			raise RuntimeError('ws2811_init failed with code {0} ({1})'.format(resp, message))
 		
 	def show(self):
 		"""Update the display with the data from the LED buffer."""
 		resp = ws.ws2811_render(self._leds)
-		if resp != 0:
-			raise RuntimeError('ws2811_render failed with code {0}'.format(resp))
+		if resp != ws.WS2811_SUCCESS:
+			message = ws.ws2811_get_return_t_str(resp)
+			raise RuntimeError('ws2811_render failed with code {0} ({1})'.format(resp, message))
 
 	def setPixelColor(self, n, color):
 		"""Set LED at position n to the provided 24-bit color value (in RGB order).

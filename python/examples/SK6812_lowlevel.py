@@ -66,8 +66,9 @@ ws.ws2811_t_dmanum_set(leds, LED_DMA_NUM)
 
 # Initialize library with LED configuration.
 resp = ws.ws2811_init(leds)
-if resp != 0:
-	raise RuntimeError('ws2811_init failed with code {0}'.format(resp))
+if resp != ws.WS2811_SUCCESS:
+	message = ws.ws2811_get_return_t_str(resp)
+	raise RuntimeError('ws2811_init failed with code {0} ({1})'.format(resp, message))
 
 # Wrap following code in a try/finally to ensure cleanup functions are called
 # after library is initialized.
@@ -84,8 +85,9 @@ try:
 
 		# Send the LED color data to the hardware.
 		resp = ws.ws2811_render(leds)
-		if resp != 0:
-			raise RuntimeError('ws2811_render failed with code {0}'.format(resp))
+		if resp != ws.WS2811_SUCCESS:
+			message = ws.ws2811_get_return_t_str(resp)
+			raise RuntimeError('ws2811_render failed with code {0} ({1})'.format(resp, message))
 
 		# Delay for a small period of time.
 		time.sleep(0.25)
