@@ -63,6 +63,9 @@ with
 
     blacklist snd_bcm2835
 
+If the audio device is still loading after blacklisting, you may also
+need to comment it out in the /etc/modules file.
+
 Some distributions use audio by default, even if nothing is being played.
 If audio is needed, you can use a USB audio device instead.
 
