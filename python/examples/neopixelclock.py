@@ -1,9 +1,10 @@
 # Based on NeoPixel library and strandtest example by Tony DiCola (tony@tonydicola.com)
 # To be used with a 12x1 NeoPixel LED stripe.
 # Place the LEDs in a circle an watch the time go by ...
-# red = hourse
+# red = hours
 # blue = minutes 1-5
 # green = seconds
+# (To run the program permanently and with autostart use systemd.)
 
 import time
 import datetime
