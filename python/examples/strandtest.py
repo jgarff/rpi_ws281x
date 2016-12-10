@@ -7,6 +7,12 @@ import time
 
 from neopixel import *
 
+import signal
+import sys
+def signal_handler(signal, frame):
+        colorWipe(strip, Color(0,0,0))
+        sys.exit(0)
+signal.signal(signal.SIGINT, signal_handler)
 
 # LED strip configuration:
 LED_COUNT      = 16      # Number of LED pixels.
