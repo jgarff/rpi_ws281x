@@ -214,7 +214,7 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 		{"dma", required_argument, 0, 'd'},
 		{"gpio", required_argument, 0, 'g'},
 		{"invert", no_argument, 0, 'i'},
-		{"clear", no_argument, 0, 'i'},
+		{"clear", no_argument, 0, 'c'},
 		{"strip", required_argument, 0, 's'},
 		{"height", required_argument, 0, 'y'},
 		{"width", required_argument, 0, 'x'},
