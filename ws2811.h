@@ -82,6 +82,7 @@ typedef struct
 
 typedef struct
 {
+    uint64_t render_wait_until;                  //< Timestamp in µs until which the next render must wait
     struct ws2811_device *device;                //< Private data for driver use
     const rpi_hw_t *rpi_hw;                      //< RPI Hardware Information
     uint32_t freq;                               //< Required output frequency

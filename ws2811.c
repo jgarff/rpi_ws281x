@@ -38,6 +38,7 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <signal.h>
+#include <time.h>
 
 #include "mailbox.h"
 #include "clk.h"
@@ -92,6 +93,22 @@ typedef struct ws2811_device
     videocore_mbox_t mbox;
     int max_count;
 } ws2811_device_t;
+
+/**
+ * Provides monotonic timestamp in microseconds.
+ *
+ * @returns  Current timestamp in microseconds or 0 on error.
+ */
+static uint64_t get_microsecond_timestamp()
+{
+    struct timespec t;
+
+    if (clock_gettime(CLOCK_MONOTONIC_RAW, &t) != 0) {
+        return 0;
+    }
+
+    return t.tv_sec * 1000000 + t.tv_nsec / 1000;
+}
 
 /**
  * Iterate through the channels and find the largest led count.
@@ -636,12 +653,29 @@ ws2811_return_t ws2811_render(ws2811_t *ws2811)
     int i, k, l, chan;
     unsigned j;
     ws2811_return_t ret;
+    uint32_t protocol_time = 0;
 
     for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)         // Channel
     {
         ws2811_channel_t *channel = &ws2811->channel[chan];
         int wordpos = chan;
         const int scale = (channel->brightness & 0xff) + 1;
+        uint8_t array_size = 3; // Assume 3 color LEDs, RGB
+
+        // 1.25µs per bit
+        const uint32_t channel_protocol_time = channel->count * array_size * 8 * 1.25;
+
+        // If our shift mask includes the highest nibble, then we have 4 LEDs, RBGW.
+        if (channel->strip_type & SK6812_SHIFT_WMASK)
+        {
+            array_size = 4;
+        }
+
+        // Only using the channel which takes the longest as both run in parallel
+        if (channel_protocol_time > protocol_time)
+        {
+            protocol_time = channel_protocol_time;
+        }
 
         for (i = 0; i < channel->count; i++)                // Led
         {
@@ -652,14 +686,6 @@ ws2811_return_t ws2811_render(ws2811_t *ws2811)
                 (((channel->leds[i] >> channel->bshift) & 0xff) * scale) >> 8, // blue
                 (((channel->leds[i] >> channel->wshift) & 0xff) * scale) >> 8, // white
             };
-            uint8_t array_size = 3; // Assume 3 color LEDs, RGB
-
-            // If our shift mask includes the highest nibble, then we have 4
-            // LEDs, RBGW.
-            if (channel->strip_type & SK6812_SHIFT_WMASK)
-            {
-                array_size = 4;
-            }
 
             for (j = 0; j < array_size; j++)               // Color
             {
@@ -702,7 +728,18 @@ ws2811_return_t ws2811_render(ws2811_t *ws2811)
         return ret;
     }
 
+    if (ws2811->render_wait_until != 0) {
+        const uint64_t current_timestamp = get_microsecond_timestamp();
+
+        if (ws2811->render_wait_until > current_timestamp) {
+            usleep(ws2811->render_wait_until - current_timestamp);
+        }
+    }
+
     dma_start(ws2811);
+
+    // 300µs are added to allow enough time for the reset to occur.
+    ws2811->render_wait_until = get_microsecond_timestamp() + protocol_time + 300;
 
     return 0;
 }
