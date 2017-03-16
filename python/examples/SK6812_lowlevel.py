@@ -17,8 +17,8 @@ LED_COUNT      = 16         # How many LEDs to light.
 LED_FREQ_HZ    = 800000     # Frequency of the LED signal.  Should be 800khz or 400khz.
 LED_DMA_NUM    = 5          # DMA channel to use, can be 0-14.
 LED_GPIO       = 18         # GPIO connected to the LED signal line.  Must support PWM!
-LED_BRIGHTNESS = 255        # Set to 0 for darkest and 255 for brightest
 LED_INVERT     = 0          # Set to 1 to invert the LED signal, good if using NPN
+LED_BRIGHTNESS = 255        # Set to 0 for darkest and 255 for brightest
 							# transistor as a 3.3V->5V level converter.  Keep at 0
 							# for a normal/non-inverted signal.
 #LED_STRIP      = ws.WS2811_STRIP_RGB
