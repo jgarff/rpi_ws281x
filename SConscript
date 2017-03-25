@@ -37,6 +37,7 @@ lib_srcs = Split('''
     mailbox.c
     ws2811.c
     pwm.c
+    pcm.c
     dma.c
     rpihw.c
 ''')
