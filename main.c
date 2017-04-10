@@ -28,7 +28,7 @@
  */
 
 
-static char VERSION[] = "testing...";
+static char VERSION[] = "XX.YY.ZZ";
 
 #include <stdint.h>
 #include <stdio.h>
@@ -53,19 +53,19 @@ static char VERSION[] = "testing...";
 #include "ws2811.h"
 
 
-#define ARRAY_SIZE(stuff)                        (sizeof(stuff) / sizeof(stuff[0]))
+#define ARRAY_SIZE(stuff)       (sizeof(stuff) / sizeof(stuff[0]))
 
 // defaults for cmdline options
-#define TARGET_FREQ                              WS2811_TARGET_FREQ
-#define GPIO_PIN                                 18
-#define DMA                                      5
-#define STRIP_TYPE				                 WS2811_STRIP_RGB		// WS2812/SK6812RGB integrated chip+leds
-//#define STRIP_TYPE				             WS2811_STRIP_GBR		// WS2812/SK6812RGB integrated chip+leds
-//#define STRIP_TYPE				             SK6812_STRIP_RGBW		// SK6812RGBW (NOT SK6812RGB)
+#define TARGET_FREQ             WS2811_TARGET_FREQ
+#define GPIO_PIN                18
+#define DMA                     5
+//#define STRIP_TYPE            WS2811_STRIP_RGB		// WS2812/SK6812RGB integrated chip+leds
+#define STRIP_TYPE              WS2811_STRIP_GBR		// WS2812/SK6812RGB integrated chip+leds
+//#define STRIP_TYPE            SK6812_STRIP_RGBW		// SK6812RGBW (NOT SK6812RGB)
 
-#define WIDTH                                    8
-#define HEIGHT                                   8
-#define LED_COUNT                                (WIDTH * HEIGHT)
+#define WIDTH                   8
+#define HEIGHT                  8
+#define LED_COUNT               (WIDTH * HEIGHT)
 
 int width = WIDTH;
 int height = HEIGHT;
@@ -122,7 +122,9 @@ void matrix_raise(void)
     {
         for (x = 0; x < width; x++)
         {
-            matrix[y * width + x] = matrix[(y + 1)*width + x];
+            // This is for the 8x8 Pimoroni Unicorn-HAT where the LEDS in subsequent
+            // rows are arranged in opposite directions
+            matrix[y * width + x] = matrix[(y + 1)*width + width - x - 1];
         }
     }
 }
@@ -178,11 +180,11 @@ void matrix_bottom(void)
             dotspos[i] = 0;
         }
 
-	if (ledstring.channel[0].strip_type == SK6812_STRIP_RGBW) {
-		matrix[dotspos[i] + (height - 1) * width] = dotcolors_rgbw[i];
-	} else {
-		matrix[dotspos[i] + (height - 1) * width] = dotcolors[i];
-	}
+        if (ledstring.channel[0].strip_type == SK6812_STRIP_RGBW) {
+            matrix[dotspos[i] + (height - 1) * width] = dotcolors_rgbw[i];
+        } else {
+            matrix[dotspos[i] + (height - 1) * width] = dotcolors[i];
+        }
     }
 }
 
@@ -245,8 +247,8 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 				"-x (--width)   - matrix width (default 8)\n"
 				"-y (--height)  - matrix height (default 8)\n"
 				"-d (--dma)     - dma channel to use (default 5)\n"
-				"-g (--gpio)    - GPIO to use must be one of 12,18,40,52\n"
-				"                 If omitted, default is 18\n"
+				"-g (--gpio)    - GPIO to use\n"
+				"                 If omitted, default is 18 (PWM0)\n"
 				"-i (--invert)  - invert pin output (pulse LOW)\n"
 				"-c (--clear)   - clear matrix on exit.\n"
 				"-v (--version) - version information\n"
@@ -260,23 +262,20 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 			if (optarg) {
 				int gpio = atoi(optarg);
 /*
-	https://www.raspberrypi.org/forums/viewtopic.php?f=91&t=105044
 	PWM0, which can be set to use GPIOs 12, 18, 40, and 52. 
-	Only 12 (pin 32) and 18 (pin 12) are available on the B+/2B
+	Only 12 (pin 32) and 18 (pin 12) are available on the B+/2B/3B
 	PWM1 which can be set to use GPIOs 13, 19, 41, 45 and 53. 
-	Only 13 is available on the B+/2B, on pin 35
+	Only 13 is available on the B+/2B/PiZero/3B, on pin 35
+	PCM_DOUT, which can be set to use GPIOs 21 and 31.
+	Only 21 is available on the B+/2B/PiZero/3B, on pin 40.
+	SPI0-MOSI is available on GPIOs 10 and 38.
+	Only GPIO 10 is available on all models.
+
+	The library checks if the specified gpio is available
+	on the specific model (from model B rev 1 till 3B)
+
 */
-				switch (gpio) {
-					case 12:
-					case 18:
-					case 40:
-					case 52:
-						ws2811->channel[0].gpionum = gpio;
-						break;
-					default:
-						printf ("gpio %d doesnt support PWM0\n",gpio);
-						exit (-1);
-				}
+				ws2811->channel[0].gpionum = gpio;
 			}
 			break;
 
@@ -375,6 +374,8 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 int main(int argc, char *argv[])
 {
     ws2811_return_t ret;
+
+    sprintf(VERSION, "%d.%d.%d", VERSION_MAJOR, VERSION_MINOR, VERSION_MICRO);
 
     parseargs(argc, argv, &ledstring);
 
