@@ -100,7 +100,11 @@ typedef struct
             X(-7, WS2811_ERROR_GPIO_INIT, "Unable to initialize GPIO"),                     \
             X(-8, WS2811_ERROR_PWM_SETUP, "Unable to initialize PWM"),                      \
             X(-9, WS2811_ERROR_MAILBOX_DEVICE, "Failed to create mailbox device"),          \
-            X(-10, WS2811_ERROR_DMA, "DMA error")                                           \
+            X(-10, WS2811_ERROR_DMA, "DMA error"),                                          \
+            X(-11, WS2811_ERROR_ILLEGAL_GPIO, "Selected GPIO not possible"),                \
+            X(-12, WS2811_ERROR_PCM_SETUP, "Unable to initialize PCM"),                     \
+            X(-13, WS2811_ERROR_SPI_SETUP, "Unable to initialize SPI"),                     \
+            X(-14, WS2811_ERROR_SPI_TRANSFER, "SPI transfer error")                         \
 
 #define WS2811_RETURN_STATES_ENUM(state, name, str) name = state
 #define WS2811_RETURN_STATES_STRING(state, name, str) str
