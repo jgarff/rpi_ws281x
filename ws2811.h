@@ -78,6 +78,7 @@ typedef struct
     uint8_t rshift;                              //< Red shift value
     uint8_t gshift;                              //< Green shift value
     uint8_t bshift;                              //< Blue shift value
+    uint8_t gamma[256];                          //< Gamma correction table
 } ws2811_channel_t;
 
 typedef struct
@@ -120,6 +121,7 @@ void ws2811_fini(ws2811_t *ws2811);                                    //< Tear 
 ws2811_return_t ws2811_render(ws2811_t *ws2811);                       //< Send LEDs off to hardware
 ws2811_return_t ws2811_wait(ws2811_t *ws2811);                         //< Wait for DMA completion
 const char * ws2811_get_return_t_str(const ws2811_return_t state);     //< Get string representation of the given return state
+
 
 #ifdef __cplusplus
 }

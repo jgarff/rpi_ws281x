@@ -1080,11 +1080,11 @@ ws2811_return_t  ws2811_render(ws2811_t *ws2811)
         for (i = 0; i < channel->count; i++)                // Led
         {
             uint8_t color[] =
-            {
-                (((channel->leds[i] >> channel->rshift) & 0xff) * scale) >> 8, // red
-                (((channel->leds[i] >> channel->gshift) & 0xff) * scale) >> 8, // green
-                (((channel->leds[i] >> channel->bshift) & 0xff) * scale) >> 8, // blue
-                (((channel->leds[i] >> channel->wshift) & 0xff) * scale) >> 8, // white
+           {
+                channel->gamma[(((channel->leds[i] >> channel->rshift) & 0xff) * scale) >> 8], // red
+                channel->gamma[(((channel->leds[i] >> channel->gshift) & 0xff) * scale) >> 8], // green
+                channel->gamma[(((channel->leds[i] >> channel->bshift) & 0xff) * scale) >> 8], // blue
+                channel->gamma[(((channel->leds[i] >> channel->wshift) & 0xff) * scale) >> 8], // white
             };
             uint8_t array_size = 3; // Assume 3 color LEDs, RGB
 
