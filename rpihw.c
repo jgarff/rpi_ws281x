@@ -49,15 +49,6 @@
 #define RPI_MANUFACTURER_MASK                    (0xf << 16)
 #define RPI_WARRANTY_MASK                        (0x3 << 24)
 
-// Structure to store results of device-tree auto-detect
-static rpi_hw_t board_info = {
-    .hwver = 0x00,
-    .type = 0x00,
-    .periph_base = 0x00,
-    .videocore_base = 0x00,
-    .desc = "N/A"
-};
-
 static const rpi_hw_t rpi_hw_info[] = {
     //
     // Model B Rev 1.0
@@ -316,55 +307,6 @@ static const rpi_hw_t rpi_hw_info[] = {
     },
 
 };
-
-static unsigned get_dt_ranges(const char *filename, unsigned offset)
-{
-    unsigned address = ~0;
-    FILE *fp = fopen(filename, "rb");
-    if (fp)
-    {
-        unsigned char buf[4];
-        fseek(fp, offset, SEEK_SET);
-        if (fread(buf, 1, sizeof buf, fp) == sizeof buf)
-        address = buf[0] << 24 | buf[1] << 16 | buf[2] << 8 | buf[3] << 0;
-        fclose(fp);
-    }
-    return address;
-}
-
-unsigned bcm_host_get_peripheral_address(void)
-{
-    return get_dt_ranges("/proc/device-tree/soc/ranges", 4);
-}
-
-unsigned bcm_host_get_peripheral_size(void)
-{
-    return get_dt_ranges("/proc/device-tree/soc/ranges", 8);
-}
-
-unsigned bcm_host_get_sdram_address(void)
-{
-    return get_dt_ranges("/proc/device-tree/axi/vc_mem/reg", 8);
-}
-
-const rpi_hw_t *rpi_dt_hw_detect(void){
-    // Attempt to auto-detect addresses from device-tree
-    unsigned videocore_base = bcm_host_get_sdram_address();
-    unsigned peripheral_base = bcm_host_get_peripheral_address();
-
-    if(videocore_base != ~0 && peripheral_base != ~0){
-
-        board_info.periph_base = peripheral_base;
-        board_info.videocore_base = videocore_base;
-        return &board_info;
-
-    }
-    else
-    {
-        // Fail over to classic detection
-        return rpi_hw_detect();
-    }
-}
 
 const rpi_hw_t *rpi_hw_detect(void)
 {
