@@ -23,7 +23,30 @@ each bit is represented by 3 bits as follows.
     Bit 0 - 1 0 0
 
 
-### Hardware:
+### GPIO Usage:
+
+The GPIOs that can be used are limited by the hardware of the Pi and will
+vary based on the method used to drive them (PWM, PCM or SPI).
+Beware that the GPIO numbers are not the same as the physical pin numbers
+on the header.
+
+PWM:
+        PWM0, which can be set to use GPIOs 12, 18, 40, and 52.
+        Only 12 (pin 32) and 18 (pin 12) are available on the B+/2B/3B
+
+        PWM1 which can be set to use GPIOs 13, 19, 41, 45 and 53.
+        Only 13 is available on the B+/2B/PiZero/3B, on pin 33
+
+PCM:
+        PCM_DOUT, which can be set to use GPIOs 21 and 31.
+        Only 21 is available on the B+/2B/PiZero/3B, on pin 40.
+
+SPI:
+        SPI0-MOSI is available on GPIOs 10 and 38.
+        Only GPIO 10 is available on all models.
+
+
+### Power and voltage requirements
 
 WS281X LEDs are generally driven at 5V, which requires that the data
 signal be at the same level.  Converting the output from a Raspberry
@@ -70,6 +93,14 @@ blacklist the Broadcom audio kernel module by creating a file
 
 If the audio device is still loading after blacklisting, you may also
 need to comment it out in the /etc/modules file.
+
+On headless systems you may also need to force audio through hdmi
+Edit config.txt and add:
+
+    hdmi_force_hotplug=1
+    hdmi_force_edid_audio=1
+
+A reboot is required for this change to take effect
 
 Some distributions use audio by default, even if nothing is being played.
 If audio is needed, you can use a USB audio device instead.
