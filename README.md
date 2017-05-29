@@ -31,19 +31,25 @@ Beware that the GPIO numbers are not the same as the physical pin numbers
 on the header.
 
 PWM:
+```
         PWM0, which can be set to use GPIOs 12, 18, 40, and 52.
         Only 12 (pin 32) and 18 (pin 12) are available on the B+/2B/3B
 
         PWM1 which can be set to use GPIOs 13, 19, 41, 45 and 53.
         Only 13 is available on the B+/2B/PiZero/3B, on pin 33
+```
 
 PCM:
+```
         PCM_DOUT, which can be set to use GPIOs 21 and 31.
         Only 21 is available on the B+/2B/PiZero/3B, on pin 40.
+```
 
 SPI:
+```
         SPI0-MOSI is available on GPIOs 10 and 38.
         Only GPIO 10 is available on all models.
+```
 
 
 ### Power and voltage requirements
@@ -75,10 +81,24 @@ reponsibility for damage, harm, or mistakes.
 
 ### Running:
 
-- Type 'sudo scons'.
 - Type 'sudo ./test' (default uses PWM channel 0).
 - That's it.  You should see a moving rainbow scroll across the
   display.
+- More options are available, ./test -h should show them:
+```
+./test version 1.1.0
+Usage: ./test
+-h (--help)    - this information
+-s (--strip)   - strip type - rgb, grb, gbr, rgbw
+-x (--width)   - matrix width (default 8)
+-y (--height)  - matrix height (default 8)
+-d (--dma)     - dma channel to use (default 5)
+-g (--gpio)    - GPIO to use
+                 If omitted, default is 18 (PWM0)
+-i (--invert)  - invert pin output (pulse LOW)
+-c (--clear)   - clear matrix on exit.
+-v (--version) - version information
+```
 
 ### Limitations:
 
