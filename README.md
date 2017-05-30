@@ -134,11 +134,14 @@ uses the PCM hardware, but you can use analog audio.
 
 When using SPI the ledstring is the only device which can be connected to
 the SPI bus. Both digital (I2S/PCM) and analog (PWM) audio can be used.
+Many distributions have a maximum SPI transfer of 4096 bytes. This can be
+changed in /boot/config.txt
+    spidev.bufsiz=32768
 
 ### Comparison PWM/PCM/SPI
 
 Both PWM and PCM use DMA transfer to output the control signal for the LEDs.
-The max size of a DMA transfer is 65536 bytes. SInce each LED needs 12 bytes
+The max size of a DMA transfer is 65536 bytes. Since each LED needs 12 bytes
 (4 colors, 8 symbols per color, 3 bits per symbol) this means you can
 control approximately 5400 LEDs for a single strand in PCM and 2700 LEDs per string
 for PWM (Only PWM can control 2 independent strings simultaneously)
