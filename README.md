@@ -14,7 +14,7 @@ are well suited to driving individually controllable WS281X LEDs.
 Using the DMA, PWM or PCM FIFO, and serial mode in the PWM, it's
 possible to control almost any number of WS281X LEDs in a chain connected
 to the appropirate output pin.
-For SPI the Raspbian spidev driver is used (/dev/spi0.0).
+For SPI the Raspbian spidev driver is used (/dev/spidev0.0).
 This library and test program set the clock rate to 3X the desired output
 frequency and creates a bit pattern in RAM from an array of colors where
 each bit is represented by 3 bits as follows.
