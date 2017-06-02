@@ -27,6 +27,9 @@
 #
 
 
+import glob
+import os
+
 Import(['clean_envs'])
 
 tools_env = clean_envs['userspace'].Clone()
@@ -59,5 +62,15 @@ for src in srcs:
    objs.append(tools_env.Object(src))
 
 test = tools_env.Program('test', objs + tools_env['LIBS'])
+
+# Install target
+install_prefix = '/usr/local'
+install_include = os.path.join(install_prefix, 'include', 'ws281x')
+install_lib = os.path.join(install_prefix, 'lib')
+
+headers = glob.glob('*.h')
+tools_env.Alias('install', tools_env.Install(install_include, headers))
+tools_env.Alias('install', tools_env.Install(install_lib, ws2811_lib))
+tools_env.Command('uninstall', None, Delete(FindInstalledFiles()))
 
 Default([test, ws2811_lib])
