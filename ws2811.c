@@ -1087,6 +1087,7 @@ ws2811_return_t  ws2811_render(ws2811_t *ws2811)
     unsigned j;
     ws2811_return_t ret = WS2811_SUCCESS;
     uint32_t protocol_time = 0;
+    static uint64_t previous_timestamp = 0;
 
     bitpos = (driver_mode == SPI ? 7 : 31);
 
@@ -1187,11 +1188,12 @@ ws2811_return_t  ws2811_render(ws2811_t *ws2811)
         return ret;
     }
 
-    if (ws2811->render_wait_until != 0) {
+    if (ws2811->render_wait_time != 0) {
         const uint64_t current_timestamp = get_microsecond_timestamp();
+        uint64_t time_diff = current_timestamp - previous_timestamp;
 
-        if (ws2811->render_wait_until > current_timestamp) {
-            usleep(ws2811->render_wait_until - current_timestamp);
+        if (ws2811->render_wait_time > time_diff) {
+            usleep(ws2811->render_wait_time - time_diff);
         }
     }
 
@@ -1205,7 +1207,8 @@ ws2811_return_t  ws2811_render(ws2811_t *ws2811)
     }
 
     // LED_RESET_WAIT_TIME is added to allow enough time for the reset to occur.
-    ws2811->render_wait_until = get_microsecond_timestamp() + protocol_time + LED_RESET_WAIT_TIME;
+    previous_timestamp = get_microsecond_timestamp();
+    ws2811->render_wait_time = protocol_time + LED_RESET_WAIT_TIME;
 
     return ret;
 }
