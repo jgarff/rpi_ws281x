@@ -1099,14 +1099,14 @@ ws2811_return_t  ws2811_render(ws2811_t *ws2811)
         const int scale = (channel->brightness & 0xff) + 1;
         uint8_t array_size = 3; // Assume 3 color LEDs, RGB
 
-        // 1.25µs per bit
-        const uint32_t channel_protocol_time = channel->count * array_size * 8 * 1.25;
-
         // If our shift mask includes the highest nibble, then we have 4 LEDs, RBGW.
         if (channel->strip_type & SK6812_SHIFT_WMASK)
         {
             array_size = 4;
         }
+
+        // 1.25µs per bit
+        const uint32_t channel_protocol_time = channel->count * array_size * 8 * 1.25;
 
         // Only using the channel which takes the longest as both run in parallel
         if (channel_protocol_time > protocol_time)
