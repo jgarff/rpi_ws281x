@@ -644,7 +644,7 @@ static int set_driver_mode(ws2811_t *ws2811, int gpionum)
         gpionum2 = ws2811->channel[1].gpionum;
         if (gpionum2 == 0 || gpionum2 == 13 || gpionum2 == 19) {
             return 0;
-        } 
+        }
     }
     else if (gpionum == 21 || gpionum == 31) {
         ws2811->device->driver_mode = PCM;
@@ -785,7 +785,7 @@ static ws2811_return_t spi_init(ws2811_t *ws2811)
     if (!channel->leds)
     {
         ws2811_cleanup(ws2811);
-	return WS2811_ERROR_OUT_OF_MEMORY;
+        return WS2811_ERROR_OUT_OF_MEMORY;
     }
     memset(channel->leds, 0, sizeof(ws2811_led_t) * channel->count);
     if (!channel->strip_type)
@@ -824,11 +824,11 @@ static ws2811_return_t spi_transfer(ws2811_t *ws2811)
     if (ret < 1)
     {
         fprintf(stderr, "Can't send spi message");
-	return WS2811_ERROR_SPI_TRANSFER;
+        return WS2811_ERROR_SPI_TRANSFER;
     }
 
     return WS2811_SUCCESS;
-}    
+}
 
 
 /*
@@ -938,7 +938,7 @@ ws2811_return_t ws2811_init(ws2811_t *ws2811)
         if (!channel->leds)
         {
             ws2811_cleanup(ws2811);
-	    return WS2811_ERROR_OUT_OF_MEMORY;
+            return WS2811_ERROR_OUT_OF_MEMORY;
         }
 
         memset(channel->leds, 0, sizeof(ws2811_led_t) * channel->count);
@@ -1150,9 +1150,9 @@ ws2811_return_t  ws2811_render(ws2811_t *ws2811)
                             {
                                 *byteptr |= (1 << bitpos);
                             }
-			}
-			else  // PWM & PCM
-			{
+                        }
+                        else  // PWM & PCM
+                        {
                             *wordptr &= ~(1 << bitpos);
                             if (symbol & (1 << l))
                             {
