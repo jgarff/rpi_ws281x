@@ -47,7 +47,7 @@ import (
 func Init(gpioPin int, ledCount int, brightness int) error {
 	C.ledstring.channel[0].gpionum = C.int(gpioPin)
 	C.ledstring.channel[0].count = C.int(ledCount)
-	C.ledstring.channel[0].brightness = C.int(brightness)
+	C.ledstring.channel[0].brightness = C.uint8_t(brightness)
 	res := int(C.ws2811_init(&C.ledstring))
 	if res == 0 {
 		return nil

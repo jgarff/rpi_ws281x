@@ -225,7 +225,6 @@ static const rpi_hw_t rpi_hw_info[] = {
         .desc = "Pi Zero W v1.1",
     },
 
-
     //
     // Model A+
     //
