@@ -37,7 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
-#include <sys/types.h>
+#include <sys/sysmacros.h>
 #include <sys/stat.h>
 
 #include "mailbox.h"
