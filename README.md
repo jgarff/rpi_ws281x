@@ -14,7 +14,7 @@ are well suited to driving individually controllable WS281X LEDs.
 Using the DMA, PWM or PCM FIFO, and serial mode in the PWM, it's
 possible to control almost any number of WS281X LEDs in a chain connected
 to the appropirate output pin.
-For SPI the Raspbian spidev driver is used (/dev/spi0.0).
+For SPI the Raspbian spidev driver is used (/dev/spidev0.0).
 This library and test program set the clock rate to 3X the desired output
 frequency and creates a bit pattern in RAM from an array of colors where
 each bit is represented by 3 bits as follows.
@@ -135,8 +135,10 @@ uses the PCM hardware, but you can use analog audio.
 When using SPI the ledstring is the only device which can be connected to
 the SPI bus. Both digital (I2S/PCM) and analog (PWM) audio can be used.
 Many distributions have a maximum SPI transfer of 4096 bytes. This can be
-changed in /boot/config.txt
+changed in /boot/cmdline.txt by appending
+```
     spidev.bufsiz=32768
+```
 
 ### Comparison PWM/PCM/SPI
 
