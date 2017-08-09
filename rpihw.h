@@ -45,7 +45,5 @@ typedef struct {
 
 
 const rpi_hw_t *rpi_hw_detect(void);
-const rpi_hw_t *rpi_dt_hw_detect(void);
-
 
 #endif /* __RPIHW_H__ */
