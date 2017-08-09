@@ -23,7 +23,36 @@ each bit is represented by 3 bits as follows.
     Bit 0 - 1 0 0
 
 
-### Hardware:
+### GPIO Usage:
+
+The GPIOs that can be used are limited by the hardware of the Pi and will
+vary based on the method used to drive them (PWM, PCM or SPI).
+Beware that the GPIO numbers are not the same as the physical pin numbers
+on the header.
+
+PWM:
+```
+        PWM0, which can be set to use GPIOs 12, 18, 40, and 52.
+        Only 12 (pin 32) and 18 (pin 12) are available on the B+/2B/3B
+
+        PWM1 which can be set to use GPIOs 13, 19, 41, 45 and 53.
+        Only 13 is available on the B+/2B/PiZero/3B, on pin 33
+```
+
+PCM:
+```
+        PCM_DOUT, which can be set to use GPIOs 21 and 31.
+        Only 21 is available on the B+/2B/PiZero/3B, on pin 40.
+```
+
+SPI:
+```
+        SPI0-MOSI is available on GPIOs 10 and 38.
+        Only GPIO 10 is available on all models.
+```
+
+
+### Power and voltage requirements
 
 WS281X LEDs are generally driven at 5V, which requires that the data
 signal be at the same level.  Converting the output from a Raspberry
@@ -52,10 +81,24 @@ reponsibility for damage, harm, or mistakes.
 
 ### Running:
 
-- Type 'sudo scons'.
 - Type 'sudo ./test' (default uses PWM channel 0).
 - That's it.  You should see a moving rainbow scroll across the
   display.
+- More options are available, ./test -h should show them:
+```
+./test version 1.1.0
+Usage: ./test
+-h (--help)    - this information
+-s (--strip)   - strip type - rgb, grb, gbr, rgbw
+-x (--width)   - matrix width (default 8)
+-y (--height)  - matrix height (default 8)
+-d (--dma)     - dma channel to use (default 5)
+-g (--gpio)    - GPIO to use
+                 If omitted, default is 18 (PWM0)
+-i (--invert)  - invert pin output (pulse LOW)
+-c (--clear)   - clear matrix on exit.
+-v (--version) - version information
+```
 
 ### Limitations:
 
@@ -71,6 +114,14 @@ blacklist the Broadcom audio kernel module by creating a file
 If the audio device is still loading after blacklisting, you may also
 need to comment it out in the /etc/modules file.
 
+On headless systems you may also need to force audio through hdmi
+Edit config.txt and add:
+
+    hdmi_force_hotplug=1
+    hdmi_force_edid_audio=1
+
+A reboot is required for this change to take effect
+
 Some distributions use audio by default, even if nothing is being played.
 If audio is needed, you can use a USB audio device instead.
 
@@ -84,10 +135,14 @@ uses the PCM hardware, but you can use analog audio.
 When using SPI the ledstring is the only device which can be connected to
 the SPI bus. Both digital (I2S/PCM) and analog (PWM) audio can be used.
 
+Many distributions have a maximum SPI transfer of 4096 bytes. This can be
+changed in /boot/config.txt
+    spidev.bufsiz=32768
+
 ### Comparison PWM/PCM/SPI
 
 Both PWM and PCM use DMA transfer to output the control signal for the LEDs.
-The max size of a DMA transfer is 65536 bytes. SInce each LED needs 12 bytes
+The max size of a DMA transfer is 65536 bytes. Since each LED needs 12 bytes
 (4 colors, 8 symbols per color, 3 bits per symbol) this means you can
 control approximately 5400 LEDs for a single strand in PCM and 2700 LEDs per string
 for PWM (Only PWM can control 2 independent strings simultaneously)

@@ -33,7 +33,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
@@ -41,6 +40,7 @@
 #include <signal.h>
 #include <linux/types.h>
 #include <linux/spi/spidev.h>
+#include <time.h>
 
 #include "mailbox.h"
 #include "clk.h"
@@ -62,6 +62,9 @@
 #define LED_RESET_uS                             55
 #define LED_BIT_COUNT(leds, freq)                ((leds * LED_COLOURS * 8 * 3) + ((LED_RESET_uS * \
                                                   (freq * 3)) / 1000000))
+
+/* Minimum time to wait for reset to occur in microseconds. */
+#define LED_RESET_WAIT_TIME                      300
 
 // Pad out to the nearest uint32 + 32-bits for idle low/high times the number of channels
 #define PWM_BYTE_COUNT(leds, freq)               (((((LED_BIT_COUNT(leds, freq) >> 3) & ~0x7) + 4) + 4) * \
@@ -110,6 +113,22 @@ typedef struct ws2811_device
     videocore_mbox_t mbox;
     int max_count;
 } ws2811_device_t;
+
+/**
+ * Provides monotonic timestamp in microseconds.
+ *
+ * @returns  Current timestamp in microseconds or 0 on error.
+ */
+static uint64_t get_microsecond_timestamp()
+{
+    struct timespec t;
+
+    if (clock_gettime(CLOCK_MONOTONIC_RAW, &t) != 0) {
+        return 0;
+    }
+
+    return t.tv_sec * 1000000 + t.tv_nsec / 1000;
+}
 
 /**
  * Iterate through the channels and find the largest led count.
@@ -590,6 +609,11 @@ void ws2811_cleanup(ws2811_t *ws2811)
             free(ws2811->channel[chan].leds);
         }
         ws2811->channel[chan].leds = NULL;
+        if (ws2811->channel && ws2811->channel[chan].gamma)
+        {
+            free(ws2811->channel[chan].gamma);
+        }
+        ws2811->channel[chan].gamma = NULL;
     }
 
     if (device->mbox.handle != -1)
@@ -929,6 +953,13 @@ ws2811_return_t ws2811_init(ws2811_t *ws2811)
           channel->strip_type=WS2811_STRIP_RGB;
         }
 
+        // Set default uncorrected gamma table
+        channel->gamma = malloc(sizeof(uint8_t) * 256);
+        int x;
+        for(x = 0; x < 256; x++){
+          channel->gamma[x] = x;
+        }
+
         channel->wshift = (channel->strip_type >> 24) & 0xff;
         channel->rshift = (channel->strip_type >> 16) & 0xff;
         channel->gshift = (channel->strip_type >> 8)  & 0xff;
@@ -1067,33 +1098,43 @@ ws2811_return_t  ws2811_render(ws2811_t *ws2811)
     int i, k, l, chan;
     unsigned j;
     ws2811_return_t ret = WS2811_SUCCESS;
+    uint32_t protocol_time = 0;
 
     bitpos = (driver_mode == SPI ? 7 : 31);
 
     for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)         // Channel
     {
         ws2811_channel_t *channel = &ws2811->channel[chan];
+
         int wordpos = chan; // PWM & PCM
         int bytepos = 0;    // SPI
-        const int scale   = (channel->brightness & 0xff) + 1;
+        const int scale = (channel->brightness & 0xff) + 1;
+        uint8_t array_size = 3; // Assume 3 color LEDs, RGB
+
+        // 1.25µs per bit
+        const uint32_t channel_protocol_time = channel->count * array_size * 8 * 1.25;
+
+        // If our shift mask includes the highest nibble, then we have 4 LEDs, RBGW.
+        if (channel->strip_type & SK6812_SHIFT_WMASK)
+        {
+            array_size = 4;
+        }
+
+        // Only using the channel which takes the longest as both run in parallel
+        if (channel_protocol_time > protocol_time)
+        {
+            protocol_time = channel_protocol_time;
+        }
 
         for (i = 0; i < channel->count; i++)                // Led
         {
             uint8_t color[] =
             {
-                (((channel->leds[i] >> channel->rshift) & 0xff) * scale) >> 8, // red
-                (((channel->leds[i] >> channel->gshift) & 0xff) * scale) >> 8, // green
-                (((channel->leds[i] >> channel->bshift) & 0xff) * scale) >> 8, // blue
-                (((channel->leds[i] >> channel->wshift) & 0xff) * scale) >> 8, // white
+                channel->gamma[(((channel->leds[i] >> channel->rshift) & 0xff) * scale) >> 8], // red
+                channel->gamma[(((channel->leds[i] >> channel->gshift) & 0xff) * scale) >> 8], // green
+                channel->gamma[(((channel->leds[i] >> channel->bshift) & 0xff) * scale) >> 8], // blue
+                channel->gamma[(((channel->leds[i] >> channel->wshift) & 0xff) * scale) >> 8], // white
             };
-            uint8_t array_size = 3; // Assume 3 color LEDs, RGB
-
-            // If our shift mask includes the highest nibble, then we have 4
-            // LEDs, RBGW.
-            if (channel->strip_type & SK6812_SHIFT_WMASK)
-            {
-                array_size = 4;
-            }
 
             for (j = 0; j < array_size; j++)               // Color
             {
@@ -1158,14 +1199,25 @@ ws2811_return_t  ws2811_render(ws2811_t *ws2811)
         return ret;
     }
 
+    if (ws2811->render_wait_until != 0) {
+        const uint64_t current_timestamp = get_microsecond_timestamp();
+
+        if (ws2811->render_wait_until > current_timestamp) {
+            usleep(ws2811->render_wait_until - current_timestamp);
+        }
+    }
+
     if (driver_mode != SPI)
     {
         dma_start(ws2811);
     }
-    else if ((ret = spi_transfer(ws2811)) != WS2811_SUCCESS)
+    else
     {
-        return ret;
+        ret = spi_transfer(ws2811);
     }
+
+    // LED_RESET_WAIT_TIME is added to allow enough time for the reset to occur.
+    ws2811->render_wait_until = get_microsecond_timestamp() + protocol_time + LED_RESET_WAIT_TIME;
 
     return ret;
 }
