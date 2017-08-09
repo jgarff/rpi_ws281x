@@ -50,15 +50,6 @@
 #define RPI_MANUFACTURER_MASK                    (0xf << 16)
 #define RPI_WARRANTY_MASK                        (0x3 << 24)
 
-// Structure to store results of device-tree auto-detect
-static rpi_hw_t board_info = {
-    .hwver = 0x00,
-    .type = 0x00,
-    .periph_base = 0x00,
-    .videocore_base = 0x00,
-    .desc = "N/A"
-};
-
 static const rpi_hw_t rpi_hw_info[] = {
     //
     // Model B Rev 1.0
