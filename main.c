@@ -172,7 +172,7 @@ void matrix_bottom(void)
 {
     int i;
 
-    for (i = 0; i < ARRAY_SIZE(dotspos); i++)
+    for (i = 0; i < (int)(ARRAY_SIZE(dotspos)); i++)
     {
         dotspos[i]++;
         if (dotspos[i] > (width - 1))
@@ -190,6 +190,7 @@ void matrix_bottom(void)
 
 static void ctrl_c_handler(int signum)
 {
+	(void)(signum);
     running = 0;
 }
 

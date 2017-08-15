@@ -55,6 +55,7 @@ def linux_flags(env):
             -g
             -O2
             -Wall
+            -Wextra
             -Werror
         '''.split(),
     }),

@@ -676,7 +676,7 @@ static int check_hwver_and_gpionum(ws2811_t *ws2811)
     gpionum = ws2811->channel[0].gpionum;
     if (hwver < 0x0004)  // Model B Rev 1
     {
-        for ( i = 0; i < (sizeof(gpionums_B1) / sizeof(gpionums_B1[0])); i++)
+        for ( i = 0; i < (int)(sizeof(gpionums_B1) / sizeof(gpionums_B1[0])); i++)
         {
             if (gpionums_B1[i] == gpionum) {
                 // Set driver mode (PWM, PCM, or SPI)
@@ -686,7 +686,7 @@ static int check_hwver_and_gpionum(ws2811_t *ws2811)
     }
     else if (hwver >= 0x000e && hwver <= 0x000f)  // Models B Rev2, A
     {
-        for ( i = 0; i < (sizeof(gpionums_B2) / sizeof(gpionums_B2[0])); i++)
+        for ( i = 0; i < (int)(sizeof(gpionums_B2) / sizeof(gpionums_B2[0])); i++)
         {
             if (gpionums_B2[i] == gpionum) {
                 // Set driver mode (PWM, PCM, or SPI)
@@ -710,7 +710,7 @@ static int check_hwver_and_gpionum(ws2811_t *ws2811)
                 return -1;
             }
         }
-        for ( i = 0; i < (sizeof(gpionums_40p) / sizeof(gpionums_40p[0])); i++)
+        for ( i = 0; i < (int)(sizeof(gpionums_40p) / sizeof(gpionums_40p[0])); i++)
         {
             if (gpionums_40p[i] == gpionum) {
                 // Set driver mode (PWM, PCM, or SPI)
@@ -1218,7 +1218,7 @@ const char * ws2811_get_return_t_str(const ws2811_return_t state)
     const int index = -state;
     static const char * const ret_state_str[] = { WS2811_RETURN_STATES(WS2811_RETURN_STATES_STRING) };
 
-    if (index < sizeof(ret_state_str) / sizeof(ret_state_str[0]))
+    if (index < (int)(sizeof(ret_state_str) / sizeof(ret_state_str[0])))
     {
         return ret_state_str[index];
     }
