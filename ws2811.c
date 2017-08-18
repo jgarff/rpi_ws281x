@@ -943,7 +943,7 @@ ws2811_return_t ws2811_init(ws2811_t *ws2811)
         if (!channel->leds)
         {
             ws2811_cleanup(ws2811);
-            return WS2811_ERROR_OUT_OF_MEMORY;
+	    return WS2811_ERROR_OUT_OF_MEMORY;
         }
 
         memset(channel->leds, 0, sizeof(ws2811_led_t) * channel->count);
@@ -1099,6 +1099,7 @@ ws2811_return_t  ws2811_render(ws2811_t *ws2811)
     unsigned j;
     ws2811_return_t ret = WS2811_SUCCESS;
     uint32_t protocol_time = 0;
+
     static uint64_t previous_timestamp = 0;
 
     bitpos = (driver_mode == SPI ? 7 : 31);

@@ -224,7 +224,6 @@ static const rpi_hw_t rpi_hw_info[] = {
         .videocore_base = VIDEOCORE_BASE_RPI,
         .desc = "Pi Zero W v1.1",
     },
-
     //
     // Model A+
     //
