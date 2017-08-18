@@ -43,6 +43,7 @@ platforms = [
             'CPPPATH' : [
             ],
             'LINKFLAGS' : [
+                "-lrt",
             ],
         },
     ], 
