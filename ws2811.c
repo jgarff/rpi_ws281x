@@ -1027,7 +1027,7 @@ ws2811_return_t ws2811_init(ws2811_t *ws2811)
     // Allocate the LED buffers
     for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)
     {
-	ws2811_channel_t *channel = &ws2811->channel[chan];
+        ws2811_channel_t *channel = &ws2811->channel[chan];
 
         channel->leds = malloc(sizeof(ws2811_led_t) * channel->count);
         if (!channel->leds)
