@@ -123,7 +123,6 @@ ws2811_return_t ws2811_render(ws2811_t *ws2811);                       //< Send 
 ws2811_return_t ws2811_wait(ws2811_t *ws2811);                         //< Wait for DMA completion
 const char * ws2811_get_return_t_str(const ws2811_return_t state);     //< Get string representation of the given return state
 
-
 #ifdef __cplusplus
 }
 #endif
