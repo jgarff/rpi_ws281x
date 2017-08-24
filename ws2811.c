@@ -127,7 +127,7 @@ static uint64_t get_microsecond_timestamp()
         return 0;
     }
 
-    return t.tv_sec * 1000000 + t.tv_nsec / 1000;
+    return (uint64_t) t.tv_sec * 1000000 + t.tv_nsec / 1000;
 }
 
 /**
