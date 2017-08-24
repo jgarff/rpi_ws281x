@@ -35,6 +35,10 @@ opts.Add(BoolVariable('V',
                       'Verbose build',
                       False))
 
+opts.Add('TOOLCHAIN',
+         'Set toolchain for cross compilation (e.g. arm-linux-gnueabihf)',
+         '')
+
 platforms = [ 
     [
         'userspace',            # Target Name
@@ -62,6 +66,10 @@ for platform, tool, flags in platforms:
     clean_envs[platform] = env
 
 Help(opts.GenerateHelpText(clean_envs))
+
+if env['TOOLCHAIN'] != '':
+    env['CC'] = env['TOOLCHAIN'] + '-gcc'
+    env['AR'] = env['TOOLCHAIN'] + '-ar'
 
 Export(['clean_envs'])
 SConscript('SConscript');
