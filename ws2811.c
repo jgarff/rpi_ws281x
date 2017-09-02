@@ -727,8 +727,14 @@ static ws2811_return_t spi_init(ws2811_t *ws2811)
     int spi_fd;
     static uint8_t mode;
     static uint8_t bits = 8;
-    uint32_t speed = ws2811->freq * 3;
+    uint32_t speed;
     ws2811_device_t *device = ws2811->device;
+
+    if(ws2811->channel[0].strip_type & 0x10000000){
+        speed = ws2811->freq * 4;
+    } else {
+        speed = ws2811->freq * 3;
+    }
 
     spi_fd = open("/dev/spidev0.0", O_RDWR);
     if (spi_fd < 0) {
