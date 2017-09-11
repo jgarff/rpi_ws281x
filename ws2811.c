@@ -954,10 +954,13 @@ ws2811_return_t ws2811_init(ws2811_t *ws2811)
         }
 
         // Set default uncorrected gamma table
-        channel->gamma = malloc(sizeof(uint8_t) * 256);
-        int x;
-        for(x = 0; x < 256; x++){
-          channel->gamma[x] = x;
+        if (!channel->gamma)
+        {
+          channel->gamma = malloc(sizeof(uint8_t) * 256);
+          int x;
+          for(x = 0; x < 256; x++){
+            channel->gamma[x] = x;
+          }
         }
 
         channel->wshift = (channel->strip_type >> 24) & 0xff;
