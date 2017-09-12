@@ -43,6 +43,7 @@ PCM:
 ```
         PCM_DOUT, which can be set to use GPIOs 21 and 31.
         Only 21 is available on the B+/2B/PiZero/3B, on pin 40.
+        See also note for RPi 3 below.
 ```
 
 SPI:
@@ -138,6 +139,12 @@ Many distributions have a maximum SPI transfer of 4096 bytes. This can be
 changed in /boot/cmdline.txt by appending
 ```
     spidev.bufsiz=32768
+```
+On a RPi 3 you have to change the GPU core frequency to 250 MHz, otherwise
+the SPI clock has the wrong frequency.
+Do this by adding the following line to /boot/config.txt and reboot.
+```
+    core_freq=250
 ```
 
 ### Comparison PWM/PCM/SPI
