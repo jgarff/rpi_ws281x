@@ -43,13 +43,13 @@ PCM:
 ```
         PCM_DOUT, which can be set to use GPIOs 21 and 31.
         Only 21 is available on the B+/2B/PiZero/3B, on pin 40.
-        See also note for RPi 3 below.
 ```
 
 SPI:
 ```
         SPI0-MOSI is available on GPIOs 10 and 38.
         Only GPIO 10 is available on all models.
+        See also note for RPi 3 below.
 ```
 
 
