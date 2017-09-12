@@ -684,7 +684,7 @@ static int check_hwver_and_gpionum(ws2811_t *ws2811)
             }
         }
     }
-    else if (hwver >= 0x000e && hwver <= 0x000f)  // Models B Rev2, A
+    else if (hwver >= 0x0004 && hwver <= 0x000f)  // Models B Rev2, A
     {
         for ( i = 0; i < (int)(sizeof(gpionums_B2) / sizeof(gpionums_B2[0])); i++)
         {
@@ -694,7 +694,7 @@ static int check_hwver_and_gpionum(ws2811_t *ws2811)
             }
         }
     }
-    else if (hwver >= 0x010) // Models B+, A+, 2B, 3B
+    else if (hwver >= 0x010) // Models B+, A+, 2B, 3B, Zero Zero-W
     {
         if ((ws2811->channel[0].count == 0) && (ws2811->channel[1].count > 0))
         {
