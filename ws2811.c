@@ -729,6 +729,8 @@ static ws2811_return_t spi_init(ws2811_t *ws2811)
     static uint8_t bits = 8;
     uint32_t speed = ws2811->freq * 3;
     ws2811_device_t *device = ws2811->device;
+    uint32_t base = ws2811->rpi_hw->periph_base;
+    int pinnum = ws2811->channel[0].gpionum;
 
     spi_fd = open("/dev/spidev0.0", O_RDWR);
     if (spi_fd < 0) {
@@ -775,9 +777,16 @@ static ws2811_return_t spi_init(ws2811_t *ws2811)
     device->pcm = NULL;
     device->dma_cb = NULL;
     device->dma_cb_addr = 0;
-    device->gpio = NULL;
     device->cm_clk = NULL;
     device->mbox.handle = -1;
+
+    // Set SPI-MOSI pin
+    device->gpio = mapmem(GPIO_OFFSET + base, sizeof(gpio_t));
+    if (!device->gpio)
+    {
+        return WS2811_ERROR_SPI_SETUP;
+    }
+    gpio_function_set(device->gpio, pinnum, 0);	// SPI-MOSI ALT0
 
     // Allocate LED buffer
     ws2811_channel_t *channel = &ws2811->channel[0];
