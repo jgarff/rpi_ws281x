@@ -49,6 +49,7 @@ SPI:
 ```
         SPI0-MOSI is available on GPIOs 10 and 38.
         Only GPIO 10 is available on all models.
+        See also note for RPi 3 below.
 ```
 
 
@@ -139,6 +140,12 @@ Many distributions have a maximum SPI transfer of 4096 bytes. This can be
 changed in /boot/cmdline.txt by appending
 ```
     spidev.bufsiz=32768
+```
+On a RPi 3 you have to change the GPU core frequency to 250 MHz, otherwise
+the SPI clock has the wrong frequency.
+Do this by adding the following line to /boot/config.txt and reboot.
+```
+    core_freq=250
 ```
 
 ### Comparison PWM/PCM/SPI
