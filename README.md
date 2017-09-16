@@ -134,6 +134,7 @@ uses the PCM hardware, but you can use analog audio.
 
 When using SPI the ledstring is the only device which can be connected to
 the SPI bus. Both digital (I2S/PCM) and analog (PWM) audio can be used.
+
 Many distributions have a maximum SPI transfer of 4096 bytes. This can be
 changed in /boot/cmdline.txt by appending
 ```

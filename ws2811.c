@@ -609,6 +609,11 @@ void ws2811_cleanup(ws2811_t *ws2811)
             free(ws2811->channel[chan].leds);
         }
         ws2811->channel[chan].leds = NULL;
+        if (ws2811->channel && ws2811->channel[chan].gamma)
+        {
+            free(ws2811->channel[chan].gamma);
+        }
+        ws2811->channel[chan].gamma = NULL;
     }
 
     if (device->mbox.handle != -1)
@@ -948,6 +953,16 @@ ws2811_return_t ws2811_init(ws2811_t *ws2811)
           channel->strip_type=WS2811_STRIP_RGB;
         }
 
+        // Set default uncorrected gamma table
+        if (!channel->gamma)
+        {
+          channel->gamma = malloc(sizeof(uint8_t) * 256);
+          int x;
+          for(x = 0; x < 256; x++){
+            channel->gamma[x] = x;
+          }
+        }
+
         channel->wshift = (channel->strip_type >> 24) & 0xff;
         channel->rshift = (channel->strip_type >> 16) & 0xff;
         channel->gshift = (channel->strip_type >> 8)  & 0xff;
@@ -1119,10 +1134,10 @@ ws2811_return_t  ws2811_render(ws2811_t *ws2811)
         {
             uint8_t color[] =
             {
-                (((channel->leds[i] >> channel->rshift) & 0xff) * scale) >> 8, // red
-                (((channel->leds[i] >> channel->gshift) & 0xff) * scale) >> 8, // green
-                (((channel->leds[i] >> channel->bshift) & 0xff) * scale) >> 8, // blue
-                (((channel->leds[i] >> channel->wshift) & 0xff) * scale) >> 8, // white
+                channel->gamma[(((channel->leds[i] >> channel->rshift) & 0xff) * scale) >> 8], // red
+                channel->gamma[(((channel->leds[i] >> channel->gshift) & 0xff) * scale) >> 8], // green
+                channel->gamma[(((channel->leds[i] >> channel->bshift) & 0xff) * scale) >> 8], // blue
+                channel->gamma[(((channel->leds[i] >> channel->wshift) & 0xff) * scale) >> 8], // white
             };
 
             for (j = 0; j < array_size; j++)               // Color

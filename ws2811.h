@@ -78,6 +78,7 @@ typedef struct
     uint8_t rshift;                              //< Red shift value
     uint8_t gshift;                              //< Green shift value
     uint8_t bshift;                              //< Blue shift value
+    uint8_t *gamma;                              //< Gamma correction table
 } ws2811_channel_t;
 
 typedef struct
