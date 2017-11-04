@@ -37,6 +37,7 @@ lib_srcs = Split('''
     mailbox.c
     ws2811.c
     pwm.c
+    pcm.c
     dma.c
     rpihw.c
 ''')
@@ -60,3 +61,35 @@ for src in srcs:
 test = tools_env.Program('test', objs + tools_env['LIBS'])
 
 Default([test, ws2811_lib])
+
+package_version = "1.1.0-1"
+package_name = 'libws2811_%s' % package_version
+
+debian_files = [
+    'DEBIAN/control',
+    'DEBIAN/postinst',
+    'DEBIAN/prerm',
+    'DEBIAN/postrm',
+]
+
+package_files_desc = [
+    [ '/usr/lib', ws2811_slib ],
+]
+
+package_files = []
+for target in package_files_desc:
+    package_files.append(tools_env.Install(package_name + target[0], target[1]))
+
+for deb_file in debian_files:
+    package_files.append(
+        tools_env.Command('%s/%s' % (package_name, deb_file), deb_file, [
+            Copy("$TARGET", "$SOURCE"),
+            Chmod("$TARGET", 0755)
+        ])
+    )
+
+package = tools_env.Command('%s.deb' % package_name, package_files,
+                            'cd %s; dpkg-deb --build %s' % (Dir('.').abspath, package_name));
+
+Alias("deb", package)
+

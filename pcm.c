@@ -1,7 +1,8 @@
 /*
- * pwm.c
+ * pcm.c
  *
  * Copyright (c) 2014 Jeremy Garff <jer @ jers.net>
+ * PCM version Copyright (c) 2016 Ton van Overbeek <tvoverbeek @ gmail.com>
  *
  * All rights reserved.
  *
@@ -29,66 +30,88 @@
 
 
 #include <stdint.h>
-
-#include "ws2811.h"
-
-#include "pwm.h"
+#include "pcm.h"
 
 
-// Mapping of Pin to alternate function for PWM channel 0
-const pwm_pin_table_t pwm_pin_chan0[] =
+// Mapping of Pin to alternate function for PCM_CLK
+const pcm_pin_table_t pcm_pin_clk[] =
 {
-    {
-        .pinnum = 12,
-        .altnum = 0,
-    },
     {
         .pinnum = 18,
-        .altnum = 5,
+        .altnum = 0,
     },
     {
-        .pinnum = 40,
-        .altnum = 0,
+        .pinnum = 28,
+        .altnum = 2,
     },
 };
 
-// Mapping of Pin to alternate function for PWM channel 1
-const pwm_pin_table_t pwm_pin_chan1[] =
+// Mapping of Pin to alternate function for PCM_FS
+const pcm_pin_table_t pcm_pin_fs[] =
 {
-    {
-        .pinnum = 13,
-        .altnum = 0,
-    },
     {
         .pinnum = 19,
-        .altnum = 5,
-    },
-    {
-        .pinnum = 41,
         .altnum = 0,
     },
     {
-        .pinnum = 45,
+        .pinnum = 29,
+        .altnum = 2,
+    },
+};
+
+// Mapping of Pin to alternate function for PCM_DIN
+const pcm_pin_table_t pcm_pin_din[] =
+{
+    {
+        .pinnum = 20,
         .altnum = 0,
     },
-};
-
-const pwm_pin_tables_t pwm_pin_tables[RPI_PWM_CHANNELS] =
-{
     {
-        .pins = pwm_pin_chan0,
-        .count = sizeof(pwm_pin_chan0) / sizeof(pwm_pin_chan0[0]),
-    },
-    {
-        .pins = pwm_pin_chan1,
-        .count = sizeof(pwm_pin_chan1) / sizeof(pwm_pin_chan1[0]),
+        .pinnum = 30,
+        .altnum = 2,
     },
 };
 
-
-int pwm_pin_alt(int chan, int pinnum)
+// Mapping of Pin to alternate function for PCM_DOUT
+const pcm_pin_table_t pcm_pin_dout[] =
 {
-    const pwm_pin_tables_t *pintable = &pwm_pin_tables[chan];
+    {
+        .pinnum = 21,
+        .altnum = 0,
+    },
+    {
+        .pinnum = 31,
+        .altnum = 2,
+    },
+};
+
+const pcm_pin_tables_t pcm_pin_tables[NUM_PCMFUNS] =
+{
+    {
+        .pins = pcm_pin_clk,
+        .count = sizeof(pcm_pin_clk) / sizeof(pcm_pin_clk[0]),
+    },
+    {
+        .pins = pcm_pin_fs,
+        .count = sizeof(pcm_pin_fs) / sizeof(pcm_pin_fs[0]),
+    },
+    {
+        .pins = pcm_pin_din,
+        .count = sizeof(pcm_pin_din) / sizeof(pcm_pin_din[0]),
+    },
+    {
+        .pins = pcm_pin_dout,
+        .count = sizeof(pcm_pin_dout) / sizeof(pcm_pin_dout[0]),
+    },
+};
+
+
+int pcm_pin_alt(int pcmfun, int pinnum)
+{
+    if (pcmfun < 0 || pcmfun > 3) {
+        return -1;
+    }
+    const pcm_pin_tables_t *pintable = &pcm_pin_tables[pcmfun];
     int i;
 
     for (i = 0; i < pintable->count; i++)

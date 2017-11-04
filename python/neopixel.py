@@ -28,7 +28,7 @@ class _LED_Data(object):
 		# Handle if a slice of positions are passed in by grabbing all the values
 		# and returning them in a list.
 		if isinstance(pos, slice):
-			return [ws.ws2811_led_get(self.channel, n) for n in range(pos.indices(self.size))]
+			return [ws.ws2811_led_get(self.channel, n) for n in xrange(*pos.indices(self.size))]
 		# Else assume the passed in value is a number to the position.
 		else:
 			return ws.ws2811_led_get(self.channel, pos)
@@ -41,7 +41,7 @@ class _LED_Data(object):
 		# LED data values to the provided values.
 		if isinstance(pos, slice):
 			index = 0
-			for n in range(pos.indices(self.size)):
+			for n in xrange(*pos.indices(self.size)):
 				ws.ws2811_led_set(self.channel, n, value[index])
 				index += 1
 		# Else assume the passed in value is a number to the position.
