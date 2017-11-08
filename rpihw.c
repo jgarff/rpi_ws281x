@@ -176,14 +176,14 @@ static const rpi_hw_t rpi_hw_info[] = {
         .type = RPI_HWVER_TYPE_PI1,
         .periph_base = PERIPH_BASE_RPI,
         .videocore_base = VIDEOCORE_BASE_RPI,
-        .desc = "Compute Module",
+        .desc = "Compute Module 1",
     },
     {
         .hwver  = 0x14,
         .type = RPI_HWVER_TYPE_PI1,
         .periph_base = PERIPH_BASE_RPI,
         .videocore_base = VIDEOCORE_BASE_RPI,
-        .desc = "Compute Module",
+        .desc = "Compute Module 1",
     },
 
     //
@@ -302,7 +302,7 @@ static const rpi_hw_t rpi_hw_info[] = {
         .type = RPI_HWVER_TYPE_PI2,
         .periph_base = PERIPH_BASE_RPI2,
         .videocore_base = VIDEOCORE_BASE_RPI2,
-        .desc = "Pi 3",
+        .desc = "Compute Module 3/L3",
     },
 
 };

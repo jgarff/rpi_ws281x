@@ -127,7 +127,7 @@ static uint64_t get_microsecond_timestamp()
         return 0;
     }
 
-    return t.tv_sec * 1000000 + t.tv_nsec / 1000;
+    return (uint64_t) t.tv_sec * 1000000 + t.tv_nsec / 1000;
 }
 
 /**
@@ -681,7 +681,7 @@ static int check_hwver_and_gpionum(ws2811_t *ws2811)
     gpionum = ws2811->channel[0].gpionum;
     if (hwver < 0x0004)  // Model B Rev 1
     {
-        for ( i = 0; i < (sizeof(gpionums_B1) / sizeof(gpionums_B1[0])); i++)
+        for ( i = 0; i < (int)(sizeof(gpionums_B1) / sizeof(gpionums_B1[0])); i++)
         {
             if (gpionums_B1[i] == gpionum) {
                 // Set driver mode (PWM, PCM, or SPI)
@@ -689,9 +689,9 @@ static int check_hwver_and_gpionum(ws2811_t *ws2811)
             }
         }
     }
-    else if (hwver >= 0x000e && hwver <= 0x000f)  // Models B Rev2, A
+    else if (hwver >= 0x0004 && hwver <= 0x000f)  // Models B Rev2, A
     {
-        for ( i = 0; i < (sizeof(gpionums_B2) / sizeof(gpionums_B2[0])); i++)
+        for ( i = 0; i < (int)(sizeof(gpionums_B2) / sizeof(gpionums_B2[0])); i++)
         {
             if (gpionums_B2[i] == gpionum) {
                 // Set driver mode (PWM, PCM, or SPI)
@@ -699,7 +699,7 @@ static int check_hwver_and_gpionum(ws2811_t *ws2811)
             }
         }
     }
-    else if (hwver >= 0x010) // Models B+, A+, 2B, 3B
+    else if (hwver >= 0x010) // Models B+, A+, 2B, 3B, Zero Zero-W
     {
         if ((ws2811->channel[0].count == 0) && (ws2811->channel[1].count > 0))
         {
@@ -715,7 +715,7 @@ static int check_hwver_and_gpionum(ws2811_t *ws2811)
                 return -1;
             }
         }
-        for ( i = 0; i < (sizeof(gpionums_40p) / sizeof(gpionums_40p[0])); i++)
+        for ( i = 0; i < (int)(sizeof(gpionums_40p) / sizeof(gpionums_40p[0])); i++)
         {
             if (gpionums_40p[i] == gpionum) {
                 // Set driver mode (PWM, PCM, or SPI)
@@ -734,6 +734,8 @@ static ws2811_return_t spi_init(ws2811_t *ws2811)
     static uint8_t bits = 8;
     uint32_t speed = ws2811->freq * 3;
     ws2811_device_t *device = ws2811->device;
+    uint32_t base = ws2811->rpi_hw->periph_base;
+    int pinnum = ws2811->channel[0].gpionum;
 
     spi_fd = open("/dev/spidev0.0", O_RDWR);
     if (spi_fd < 0) {
@@ -780,9 +782,16 @@ static ws2811_return_t spi_init(ws2811_t *ws2811)
     device->pcm = NULL;
     device->dma_cb = NULL;
     device->dma_cb_addr = 0;
-    device->gpio = NULL;
     device->cm_clk = NULL;
     device->mbox.handle = -1;
+
+    // Set SPI-MOSI pin
+    device->gpio = mapmem(GPIO_OFFSET + base, sizeof(gpio_t));
+    if (!device->gpio)
+    {
+        return WS2811_ERROR_SPI_SETUP;
+    }
+    gpio_function_set(device->gpio, pinnum, 0);	// SPI-MOSI ALT0
 
     // Allocate LED buffer
     ws2811_channel_t *channel = &ws2811->channel[0];
@@ -796,6 +805,16 @@ static ws2811_return_t spi_init(ws2811_t *ws2811)
     if (!channel->strip_type)
     {
       channel->strip_type=WS2811_STRIP_RGB;
+    }
+  
+    // Set default uncorrected gamma table
+    if (!channel->gamma)
+    {
+      channel->gamma = malloc(sizeof(uint8_t) * 256);
+      int x;
+      for(x = 0; x < 256; x++){
+        channel->gamma[x] = x;
+      }
     }
 
     channel->wshift = (channel->strip_type >> 24) & 0xff;
@@ -1233,7 +1252,7 @@ const char * ws2811_get_return_t_str(const ws2811_return_t state)
     const int index = -state;
     static const char * const ret_state_str[] = { WS2811_RETURN_STATES(WS2811_RETURN_STATES_STRING) };
 
-    if (index < sizeof(ret_state_str) / sizeof(ret_state_str[0]))
+    if (index < (int)(sizeof(ret_state_str) / sizeof(ret_state_str[0])))
     {
         return ret_state_str[index];
     }

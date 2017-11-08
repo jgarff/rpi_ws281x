@@ -50,10 +50,6 @@ const pwm_pin_table_t pwm_pin_chan0[] =
         .pinnum = 40,
         .altnum = 0,
     },
-    {
-        .pinnum = 52,
-        .altnum = 1,
-    },
 };
 
 // Mapping of Pin to alternate function for PWM channel 1
@@ -74,10 +70,6 @@ const pwm_pin_table_t pwm_pin_chan1[] =
     {
         .pinnum = 45,
         .altnum = 0,
-    },
-    {
-        .pinnum = 53,
-        .altnum = 1,
     },
 };
 

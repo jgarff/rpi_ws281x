@@ -127,7 +127,7 @@ typedef struct
 #define RPI_PCM_GRAY_FLUSH                      (1 << 2)
 #define RPI_PCM_GRAY_CLR                        (1 << 1)
 #define RPI_PCM_GRAY_EN                         (1 << 0)
-} __attribute__((packed)) pcm_t;
+} __attribute__((packed, aligned(4))) pcm_t;
 
 
 #define PCM_OFFSET                               (0x00203000)
