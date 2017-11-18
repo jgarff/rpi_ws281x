@@ -7,6 +7,19 @@ import time
 
 from neopixel import *
 
+import argparse
+import signal
+import sys
+def signal_handler(signal, frame):
+        colorWipe(strip, Color(0,0,0))
+        sys.exit(0)
+
+def opt_parse():
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-c', action='store_true', help='clear the display on exit')
+        args = parser.parse_args()
+        if args.c:
+                signal.signal(signal.SIGINT, signal_handler)
 
 # LED strip configuration:
 LED_COUNT      = 16      # Number of LED pixels.
@@ -78,9 +91,11 @@ def theaterChaseRainbow(strip, wait_ms=50):
 			for i in range(0, strip.numPixels(), 3):
 				strip.setPixelColor(i+q, 0)
 
-
 # Main program logic follows:
 if __name__ == '__main__':
+        # Process arguments
+        opt_parse()
+
 	# Create NeoPixel object with appropriate configuration.
 	strip = Adafruit_NeoPixel(LED_COUNT, LED_PIN, LED_FREQ_HZ, LED_DMA, LED_INVERT, LED_BRIGHTNESS, LED_CHANNEL, LED_STRIP)
 	# Intialize the library (must be called once before other functions).
