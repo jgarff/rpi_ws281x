@@ -130,6 +130,12 @@ class Adafruit_NeoPixel(object):
 		"""
 		ws.ws2811_channel_t_brightness_set(self._channel, brightness)
 
+	def getBrightness(self):
+		"""Get the brightness value for each LED in the buffer. A brightness
+		of 0 is the darkest and 255 is the brightest.
+		"""
+		return ws.ws2811_channel_t_brightness_get(self._channel)
+
 	def getPixels(self):
 		"""Return an object which allows access to the LED display data as if
 		it were a sequence of 24-bit RGB values.
