@@ -33,7 +33,7 @@ func colorWipe(color uint32) error {
 		err := ws2811.Render()
 		if err != nil {
 			ws2811.Clear()
-			return error
+			return err
 		}
 
 		time.Sleep(50 * time.Millisecond)
