@@ -3,7 +3,7 @@
 As this is just a Go wrapper for the library you must clone this into your `$GOPATH` as you would any other Go program. 
 Your path to the project should be:
 ```
-  $GOPATH/src/jgraff/rpi_ws281x
+  $GOPATH/src/github.com/jgraff/rpi_ws281x
 ```
 
 
