@@ -20,7 +20,20 @@ func main() {
 		fmt.Println(err)
 	} else {
 		fmt.Println("Press Ctr-C to quit.")
+		fmt.Println("Creating blue color wipe")
 		err = colorWipe(uint32(0x000020))
+		if err != nil {
+			fmt.Println("Error during wipe " + err.Error())
+		}
+
+		fmt.Println("Creating red color wipe")
+		err = colorWipe(uint32(0x002000))
+		if err != nil {
+			fmt.Println("Error during wipe " + err.Error())
+		}
+
+		fmt.Println("Creating green color wipe")
+		err = colorWipe(uint32(0x200000))
 		if err != nil {
 			fmt.Println("Error during wipe " + err.Error())
 		}
