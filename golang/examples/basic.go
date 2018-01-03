@@ -2,6 +2,7 @@ package main
 
 import (
 	"time"
+	"os"
 	"fmt"
 
 	"github.com/jgraff/rpi_ws281x/golang/ws2811"
@@ -24,18 +25,21 @@ func main() {
 		err = colorWipe(uint32(0x000020))
 		if err != nil {
 			fmt.Println("Error during wipe " + err.Error())
+			os.Exit(-1)
 		}
 
 		fmt.Println("Creating red color wipe")
 		err = colorWipe(uint32(0x002000))
 		if err != nil {
 			fmt.Println("Error during wipe " + err.Error())
+			os.Exit(-1)
 		}
 
 		fmt.Println("Creating green color wipe")
 		err = colorWipe(uint32(0x200000))
 		if err != nil {
 			fmt.Println("Error during wipe " + err.Error())
+			os.Exit(-1)
 		}
 	}
 }
