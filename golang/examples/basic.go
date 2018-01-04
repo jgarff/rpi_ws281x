@@ -5,7 +5,7 @@ import (
 	"os"
 	"fmt"
 
-	"github.com/jgraff/rpi_ws281x/golang/ws2811"
+	"github.com/jgarff/rpi_ws281x/golang/ws2811"
 )
 
 const (
