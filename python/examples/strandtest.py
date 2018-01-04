@@ -122,4 +122,5 @@ if __name__ == '__main__':
 	except KeyboardInterrupt:
 		for j in range(strip.numPixels()):
 			strip.setPixelColor(j, Color(0,0,0))
+			strip.show()
 		exit(1)
