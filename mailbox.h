@@ -30,6 +30,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MAJOR_NUM 100
 #define IOCTL_MBOX_PROPERTY _IOWR(MAJOR_NUM, 0, char *)
 
+#define DEV_MEM     "/dev/mem"
+#define DEV_GPIOMEM "/dev/gpiomem"
+
 int mbox_open(void);
 void mbox_close(int file_desc);
 

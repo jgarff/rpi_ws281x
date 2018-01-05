@@ -156,6 +156,9 @@ Do this by adding the following line to /boot/config.txt and reboot.
     core_freq=250
 ```
 
+SPI requires you to be in the `gpio` group if you wish to control your LEDs
+withou root.
+
 ### Comparison PWM/PCM/SPI
 
 Both PWM and PCM use DMA transfer to output the control signal for the LEDs.
