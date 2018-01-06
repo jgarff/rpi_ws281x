@@ -30,6 +30,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MAJOR_NUM 100
 #define IOCTL_MBOX_PROPERTY _IOWR(MAJOR_NUM, 0, char *)
 
+#define DEV_MEM     "/dev/mem"
+#define DEV_GPIOMEM "/dev/gpiomem"
+
 int mbox_open(void);
 void mbox_close(int file_desc);
 
@@ -38,7 +41,7 @@ unsigned mem_alloc(int file_desc, unsigned size, unsigned align, unsigned flags)
 unsigned mem_free(int file_desc, unsigned handle);
 unsigned mem_lock(int file_desc, unsigned handle);
 unsigned mem_unlock(int file_desc, unsigned handle);
-void *mapmem(unsigned base, unsigned size);
+void *mapmem(unsigned base, unsigned size, const char *mem_dev);
 void *unmapmem(void *addr, unsigned size);
 
 unsigned execute_code(int file_desc, unsigned code, unsigned r0, unsigned r1, unsigned r2, unsigned r3, unsigned r4, unsigned r5);

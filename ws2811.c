@@ -175,7 +175,7 @@ static int map_registers(ws2811_t *ws2811)
     }
     dma_addr += rpi_hw->periph_base;
 
-    device->dma = mapmem(dma_addr, sizeof(dma_t));
+    device->dma = mapmem(dma_addr, sizeof(dma_t), DEV_MEM);
     if (!device->dma)
     {
         return -1;
@@ -183,7 +183,7 @@ static int map_registers(ws2811_t *ws2811)
 
     switch (device->driver_mode) {
     case PWM:
-        device->pwm = mapmem(PWM_OFFSET + base, sizeof(pwm_t));
+        device->pwm = mapmem(PWM_OFFSET + base, sizeof(pwm_t), DEV_MEM);
         if (!device->pwm)
         {
             return -1;
@@ -191,7 +191,7 @@ static int map_registers(ws2811_t *ws2811)
         break;
 
     case PCM:
-        device->pcm = mapmem(PCM_OFFSET + base, sizeof(pcm_t));
+        device->pcm = mapmem(PCM_OFFSET + base, sizeof(pcm_t), DEV_MEM);
         if (!device->pcm)
         {
             return -1;
@@ -199,7 +199,12 @@ static int map_registers(ws2811_t *ws2811)
         break;
     }
 
-    device->gpio = mapmem(GPIO_OFFSET + base, sizeof(gpio_t));
+    /*
+     * The below call can potentially work with /dev/gpiomem instead.
+     * However, it used /dev/mem before, so I'm leaving it as such.
+     */
+
+    device->gpio = mapmem(GPIO_OFFSET + base, sizeof(gpio_t), DEV_MEM);
     if (!device->gpio)
     {
         return -1;
@@ -213,7 +218,7 @@ static int map_registers(ws2811_t *ws2811)
         offset = CM_PCM_OFFSET;
         break;
     }
-    device->cm_clk = mapmem(offset + base, sizeof(cm_clk_t));
+    device->cm_clk = mapmem(offset + base, sizeof(cm_clk_t), DEV_MEM);
     if (!device->cm_clk)
     {
         return -1;
@@ -786,7 +791,7 @@ static ws2811_return_t spi_init(ws2811_t *ws2811)
     device->mbox.handle = -1;
 
     // Set SPI-MOSI pin
-    device->gpio = mapmem(GPIO_OFFSET + base, sizeof(gpio_t));
+    device->gpio = mapmem(GPIO_OFFSET + base, sizeof(gpio_t), DEV_GPIOMEM);
     if (!device->gpio)
     {
         return WS2811_ERROR_SPI_SETUP;
@@ -806,7 +811,7 @@ static ws2811_return_t spi_init(ws2811_t *ws2811)
     {
       channel->strip_type=WS2811_STRIP_RGB;
     }
-  
+
     // Set default uncorrected gamma table
     if (!channel->gamma)
     {
@@ -935,7 +940,7 @@ ws2811_return_t ws2811_init(ws2811_t *ws2811)
        return WS2811_ERROR_MEM_LOCK;
     }
 
-    device->mbox.virt_addr = mapmem(BUS_TO_PHYS(device->mbox.bus_addr), device->mbox.size);
+    device->mbox.virt_addr = mapmem(BUS_TO_PHYS(device->mbox.bus_addr), device->mbox.size, DEV_MEM);
     if (!device->mbox.virt_addr)
     {
         mem_unlock(device->mbox.handle, device->mbox.mem_ref);
