@@ -5,7 +5,7 @@ Userspace Raspberry Pi library for controlling WS281X LEDs.
 This includes WS2812 and SK6812RGB RGB LEDs
 Preliminary support is now included for SK6812RGBW LEDs (yes, RGB + W)
 The LEDs can be controlled by either the PWM (2 independent channels)
-or PCM controller (1 channel) or the SPI interfacei (1 channel).
+or PCM controller (1 channel) or the SPI interface (1 channel).
 
 ### Background:
 
@@ -13,8 +13,8 @@ The BCM2835 in the Raspberry Pi has both a PWM and a PCM module that
 are well suited to driving individually controllable WS281X LEDs.
 Using the DMA, PWM or PCM FIFO, and serial mode in the PWM, it's
 possible to control almost any number of WS281X LEDs in a chain connected
-to the appropirate output pin.
-For SPI the Raspbian spidev driver is used (/dev/spidev0.0).
+to the appropriate output pin.
+For SPI the Raspbian spidev driver is used (`/dev/spidev0.0`).
 This library and test program set the clock rate to 3X the desired output
 frequency and creates a bit pattern in RAM from an array of colors where
 each bit is represented by 3 bits as follows.
@@ -73,8 +73,8 @@ reponsibility for damage, harm, or mistakes.
 
 ### Build:
 
-- Install Scons (on raspbian, apt-get install scons).
-- Make sure to adjust the parameters in main.c to suit your hardare.
+- Install Scons (on raspbian, `apt-get install scons`).
+- Make sure to adjust the parameters in main.c to suit your hardware.
   - Signal rate (400kHz to 800kHz).  Default 800kHz.
   - ledstring.invert=1 if using a inverting level shifter.
   - Width and height of LED matrix (height=1 for LED string).
@@ -93,13 +93,21 @@ Usage: ./test
 -s (--strip)   - strip type - rgb, grb, gbr, rgbw
 -x (--width)   - matrix width (default 8)
 -y (--height)  - matrix height (default 8)
--d (--dma)     - dma channel to use (default 5)
+-d (--dma)     - dma channel to use (default 10)
 -g (--gpio)    - GPIO to use
                  If omitted, default is 18 (PWM0)
 -i (--invert)  - invert pin output (pulse LOW)
 -c (--clear)   - clear matrix on exit.
 -v (--version) - version information
 ```
+
+### Important warning about DMA channels
+
+You must make sure that the DMA channel you choose to use for the LEDs is not [already in use](https://www.raspberrypi.org/forums/viewtopic.php?p=609380#p609380) by the operating system.
+
+For example, **using DMA channel 5 [will cause](https://github.com/jgarff/rpi_ws281x/issues/224) filesystem corruption** on the Raspberry Pi 3 Model B.
+
+The default DMA channel (10) should be safe for the Raspberry Pi 3 Model B, but this may change in future software releases.
 
 ### Limitations:
 
@@ -108,7 +116,7 @@ Usage: ./test
 Since this library and the onboard Raspberry Pi audio
 both use the PWM, they cannot be used together.  You will need to
 blacklist the Broadcom audio kernel module by creating a file
-/etc/modprobe.d/snd-blacklist.conf with
+`/etc/modprobe.d/snd-blacklist.conf` with
 
     blacklist snd_bcm2835
 
@@ -137,7 +145,7 @@ When using SPI the ledstring is the only device which can be connected to
 the SPI bus. Both digital (I2S/PCM) and analog (PWM) audio can be used.
 
 Many distributions have a maximum SPI transfer of 4096 bytes. This can be
-changed in /boot/cmdline.txt by appending
+changed in `/boot/cmdline.txt` by appending
 ```
     spidev.bufsiz=32768
 ```
@@ -147,6 +155,9 @@ Do this by adding the following line to /boot/config.txt and reboot.
 ```
     core_freq=250
 ```
+
+SPI requires you to be in the `gpio` group if you wish to control your LEDs
+withou root.
 
 ### Comparison PWM/PCM/SPI
 
@@ -167,14 +178,14 @@ When controlling a LED string of 240 LEDs the CPU load on the original Pi 2 (BCM
 
 ### Usage:
 
-The API is very simple.  Make sure to create and initialize the ws2811_t
-structure as seen in main.c.  From there it can be initialized
-by calling ws2811_init().  LEDs are changed by modifying the color in
-the .led[index] array and calling ws2811_render().
+The API is very simple.  Make sure to create and initialize the `ws2811_t`
+structure as seen in [`main.c`](main.c).  From there it can be initialized
+by calling `ws2811_init()`.  LEDs are changed by modifying the color in
+the `.led[index]` array and calling `ws2811_render()`.
 The rest is handled by the library, which either creates the DMA memory and
 starts the DMA for PWM and PCM or prepares the SPI transfer buffer and sends
 it out on the MISO pin.
 
 Make sure to hook a signal handler for SIGKILL to do cleanup.  From the
-handler make sure to call ws2811_fini().  It'll make sure that the DMA
+handler make sure to call `ws2811_fini()`.  It'll make sure that the DMA
 is finished before program execution stops and cleans up after itself.

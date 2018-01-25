@@ -58,7 +58,7 @@ static char VERSION[] = "XX.YY.ZZ";
 // defaults for cmdline options
 #define TARGET_FREQ             WS2811_TARGET_FREQ
 #define GPIO_PIN                18
-#define DMA                     5
+#define DMA                     10
 //#define STRIP_TYPE            WS2811_STRIP_RGB		// WS2812/SK6812RGB integrated chip+leds
 #define STRIP_TYPE              WS2811_STRIP_GBR		// WS2812/SK6812RGB integrated chip+leds
 //#define STRIP_TYPE            SK6812_STRIP_RGBW		// SK6812RGBW (NOT SK6812RGB)
@@ -263,9 +263,9 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 			if (optarg) {
 				int gpio = atoi(optarg);
 /*
-	PWM0, which can be set to use GPIOs 12, 18, 40, and 52. 
+	PWM0, which can be set to use GPIOs 12, 18, 40, and 52.
 	Only 12 (pin 32) and 18 (pin 12) are available on the B+/2B/3B
-	PWM1 which can be set to use GPIOs 13, 19, 41, 45 and 53. 
+	PWM1 which can be set to use GPIOs 13, 19, 41, 45 and 53.
 	Only 13 is available on the B+/2B/PiZero/3B, on pin 33
 	PCM_DOUT, which can be set to use GPIOs 21 and 31.
 	Only 21 is available on the B+/2B/PiZero/3B, on pin 40.
@@ -417,4 +417,3 @@ int main(int argc, char *argv[])
     printf ("\n");
     return ret;
 }
-
