@@ -55,11 +55,12 @@ SPI:
 
 ### Power and voltage requirements
 
-WS281X LEDs are generally driven at 5V, which requires that the data
-signal be at the same level.  Converting the output from a Raspberry
-Pi GPIO/PWM to a higher voltage through a level shifter is required.
+WS281X LEDs are generally driven at 5V. Depending on your actual
+LED model and data line length you might be able to successfully drive
+the data input with 3.3V. However in the general case you probably
+want to use a level shifter to convert from the Raspberry Pi GPIO/PWM to 5V.
 
-It is possible to run the LEDs from a 3.3V - 3.6V power source, and
+It is also possible to run the LEDs from a 3.3V - 3.6V power source, and
 connect the GPIO directly at a cost of brightness, but this isn't
 recommended.
 
