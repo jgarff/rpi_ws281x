@@ -157,7 +157,7 @@ Do this by adding the following line to /boot/config.txt and reboot.
 ```
 
 SPI requires you to be in the `gpio` group if you wish to control your LEDs
-withou root.
+without root.
 
 ### Comparison PWM/PCM/SPI
 
