@@ -7,7 +7,7 @@
 
 import time
 from neopixel import *
-from rpi_ws281x.rpi_ws281x import ws
+import _rpi_ws281x as ws
 import argparse
 
 # LED strip configuration:
