@@ -7,9 +7,6 @@ Your path to the project should be:
 ```
 
 
-As listed in the `ws2811.go` file ensure to copy `ws2811.h`, `rpihw.h`, and `pwm.h` in a GCC include path (e.g. `/usr/local/include`) and
-`libws2811.a` in a GCC library path (e.g. `/usr/local/lib`).
-
 To run the basic example run the following commands:
 ```
   cd golang/examples

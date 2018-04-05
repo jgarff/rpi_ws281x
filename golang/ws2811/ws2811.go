@@ -24,17 +24,15 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /*
-Interface to ws2811 chip (neopixel driver). Make sure that you have
-ws2811.h, rpihw.h, and pwm.h in a GCC include path (e.g. /usr/local/include) and
-libws2811.a in a GCC library path (e.g. /usr/local/lib).
+Interface to ws2811 chip (neopixel driver).
 See https://github.com/jgarff/rpi_ws281x for instructions
 */
 
 package ws2811
 
 /*
-#cgo CFLAGS: -std=c99
-#cgo LDFLAGS: -lws2811
+#cgo CFLAGS: -std=c99 -I../../
+#cgo LDFLAGS: -lws2811 -L../../
 #include "ws2811.go.h"
 */
 import "C"
