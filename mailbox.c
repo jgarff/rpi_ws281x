@@ -68,7 +68,7 @@ void *mapmem(uint32_t base, uint32_t size, const char *mem_dev) {
 
 void *unmapmem(void *addr, uint32_t size) {
     uint32_t pagemask = ~0UL ^ (getpagesize() - 1);
-    uint32_t baseaddr = (uint32_t)addr & pagemask;
+    uintptr_t baseaddr = (uintptr_t)addr & pagemask;
     int s;
     
     s = munmap((void *)baseaddr, size);
