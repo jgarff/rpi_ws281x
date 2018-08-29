@@ -7,6 +7,17 @@ Preliminary support is now included for SK6812RGBW LEDs (yes, RGB + W)
 The LEDs can be controlled by either the PWM (2 independent channels)
 or PCM controller (1 channel) or the SPI interface (1 channel).
 
+### Bindings:
+
+Language-specific bindings for rpi_ws281x are available in:
+
+* Python - https://github.com/rpi-ws281x/rpi-ws281x-python
+* Rust - https://github.com/rpi-ws281x/rpi-ws281x-rust
+* Powershell - https://github.com/rpi-ws281x/rpi-ws281x-powershell
+* Java - https://github.com/rpi-ws281x/rpi-ws281x-java
+* CSharp - https://github.com/rpi-ws281x/rpi-ws281x-csharp
+* Go - https://github.com/rpi-ws281x/rpi-ws281x-go
+
 ### Background:
 
 The BCM2835 in the Raspberry Pi has both a PWM and a PCM module that
