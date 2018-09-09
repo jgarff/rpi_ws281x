@@ -308,6 +308,13 @@ static const rpi_hw_t rpi_hw_info[] = {
         .videocore_base = VIDEOCORE_BASE_RPI2,
         .desc = "Pi 3",
     },
+    {
+        .hwver  = 0xa020d3,
+        .type = RPI_HWVER_TYPE_PI2,
+        .periph_base = PERIPH_BASE_RPI2,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Pi 3+",
+    },
     //
     // Pi Compute Module 3
     //
@@ -361,7 +368,7 @@ const rpi_hw_t *rpi_hw_detect(void)
                 // Take out warranty and manufacturer bits
                 hwver &= ~(RPI_WARRANTY_MASK | RPI_MANUFACTURER_MASK);
                 rev &= ~(RPI_WARRANTY_MASK | RPI_MANUFACTURER_MASK);
-                
+
                 if (rev == hwver)
                 {
                     result = &rpi_hw_info[i];
