@@ -79,14 +79,14 @@ reponsibility for damage, harm, or mistakes.
   - Signal rate (400kHz to 800kHz).  Default 800kHz.
   - ledstring.invert=1 if using a inverting level shifter.
   - Width and height of LED matrix (height=1 for LED string).
-- Type 'scons' from inside the source directory.
+- Type `scons` from inside the source directory.
 
 ### Running:
 
-- Type 'sudo ./test' (default uses PWM channel 0).
+- Type `sudo ./test` (default uses PWM channel 0).
 - That's it.  You should see a moving rainbow scroll across the
   display.
-- More options are available, ./test -h should show them:
+- More options are available, `./test -h` should show them:
 ```
 ./test version 1.1.0
 Usage: ./test
