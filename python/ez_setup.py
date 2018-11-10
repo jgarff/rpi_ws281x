@@ -205,7 +205,7 @@ def has_powershell():
 download_file_powershell.viable = has_powershell
 
 def download_file_curl(url, target):
-    cmd = ['curl', url, '--silent', '--output', target]
+    cmd = ['curl', '-L', url, '--silent', '--output', target]
     _clean_check(cmd, target)
 
 def has_curl():
