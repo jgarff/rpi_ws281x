@@ -892,6 +892,7 @@ ws2811_return_t ws2811_init(ws2811_t *ws2811)
     {
         return WS2811_ERROR_OUT_OF_MEMORY;
     }
+    memset(ws2811->device, 0, sizeof(*ws2811->device));
     device = ws2811->device;
 
     if (check_hwver_and_gpionum(ws2811) < 0)
