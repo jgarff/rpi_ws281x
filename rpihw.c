@@ -326,6 +326,9 @@ static const rpi_hw_t rpi_hw_info[] = {
 const rpi_hw_t *rpi_hw_detect(void)
 {
     const rpi_hw_t *result = NULL;
+    uint32_t rev;
+    unsigned i;
+
 #ifdef __aarch64__
     // On ARM64, read revision from /proc/device-tree as it is not shown in
     // /proc/cpuinfo
@@ -334,13 +337,12 @@ const rpi_hw_t *rpi_hw_detect(void)
     {
         return NULL;
     }
-    uint32_t rev;
     fread(&rev, sizeof(uint32_t), 1, f);
     #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
         rev = bswap_32(rev);  // linux,revision appears to be in big endian
     #endif
 
-    for (unsigned i = 0; i < (sizeof(rpi_hw_info) / sizeof(rpi_hw_info[0])); i++)
+    for (i = 0; i < (sizeof(rpi_hw_info) / sizeof(rpi_hw_info[0])); i++)
     {
         uint32_t hwver = rpi_hw_info[i].hwver;
         if (rev == hwver)
@@ -363,9 +365,7 @@ const rpi_hw_t *rpi_hw_detect(void)
     {
         if (strstr(line, HW_VER_STRING))
         {
-            uint32_t rev;
             char *substr;
-            unsigned i;
 
             substr = strstr(line, ": ");
             if (!substr)
