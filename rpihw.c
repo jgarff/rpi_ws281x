@@ -33,6 +33,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <byteswap.h>
 
 #include "rpihw.h"
 
@@ -324,9 +325,36 @@ static const rpi_hw_t rpi_hw_info[] = {
 
 const rpi_hw_t *rpi_hw_detect(void)
 {
+    const rpi_hw_t *result = NULL;
+    uint32_t rev;
+    unsigned i;
+
+#ifdef __aarch64__
+    // On ARM64, read revision from /proc/device-tree as it is not shown in
+    // /proc/cpuinfo
+    FILE *f = fopen("/proc/device-tree/system/linux,revision", "r");
+    if (!f)
+    {
+        return NULL;
+    }
+    fread(&rev, sizeof(uint32_t), 1, f);
+    #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+        rev = bswap_32(rev);  // linux,revision appears to be in big endian
+    #endif
+
+    for (i = 0; i < (sizeof(rpi_hw_info) / sizeof(rpi_hw_info[0])); i++)
+    {
+        uint32_t hwver = rpi_hw_info[i].hwver;
+        if (rev == hwver)
+        {
+            result = &rpi_hw_info[i];
+
+            goto done;
+        }
+    }
+#else
     FILE *f = fopen("/proc/cpuinfo", "r");
     char line[LINE_WIDTH_MAX];
-    const rpi_hw_t *result = NULL;
 
     if (!f)
     {
@@ -337,9 +365,7 @@ const rpi_hw_t *rpi_hw_detect(void)
     {
         if (strstr(line, HW_VER_STRING))
         {
-            uint32_t rev;
             char *substr;
-            unsigned i;
 
             substr = strstr(line, ": ");
             if (!substr)
@@ -361,7 +387,7 @@ const rpi_hw_t *rpi_hw_detect(void)
                 // Take out warranty and manufacturer bits
                 hwver &= ~(RPI_WARRANTY_MASK | RPI_MANUFACTURER_MASK);
                 rev &= ~(RPI_WARRANTY_MASK | RPI_MANUFACTURER_MASK);
-                
+
                 if (rev == hwver)
                 {
                     result = &rpi_hw_info[i];
@@ -371,7 +397,7 @@ const rpi_hw_t *rpi_hw_detect(void)
             }
         }
     }
-
+#endif
 done:
     fclose(f);
 
