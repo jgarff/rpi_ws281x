@@ -66,7 +66,7 @@ extern "C" {
 struct ws2811_device;
 
 typedef uint32_t ws2811_led_t;                   //< 0xWWRRGGBB
-typedef struct
+typedef struct ws2811_channel_t
 {
     int gpionum;                                 //< GPIO Pin with PWM alternate function, 0 if unused
     int invert;                                  //< Invert output signal
@@ -81,7 +81,7 @@ typedef struct
     uint8_t *gamma;                              //< Gamma correction table
 } ws2811_channel_t;
 
-typedef struct
+typedef struct ws2811_t
 {
     uint64_t render_wait_time;                   //< time in µs before the next render can run
     struct ws2811_device *device;                //< Private data for driver use
