@@ -247,7 +247,7 @@ void parseargs(int argc, char **argv, ws2811_t *ws2811)
 				"-s (--strip)   - strip type - rgb, grb, gbr, rgbw\n"
 				"-x (--width)   - matrix width (default 8)\n"
 				"-y (--height)  - matrix height (default 8)\n"
-				"-d (--dma)     - dma channel to use (default 5)\n"
+				"-d (--dma)     - dma channel to use (default 10)\n"
 				"-g (--gpio)    - GPIO to use\n"
 				"                 If omitted, default is 18 (PWM0)\n"
 				"-i (--invert)  - invert pin output (pulse LOW)\n"
