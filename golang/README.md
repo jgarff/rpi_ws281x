@@ -1,3 +1,11 @@
+## Deprecated
+
+This Go code is being phased out and replaced with https://github.com/rpi-ws281x/rpi-ws281x-go
+
+For issues and bugs with (or contributions to) the Go library, please see: https://github.com/rpi-ws281x/rpi-ws281x-go/issues
+
+----
+
 ## Run a demo
 
 As this is just a Go wrapper for the library you must clone this into your `$GOPATH` as you would any other Go program. 
