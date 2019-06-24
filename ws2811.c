@@ -56,7 +56,7 @@
 #define BUS_TO_PHYS(x)                           ((x)&~0xC0000000)
 
 #define OSC_FREQ                                 19200000   // crystal frequency
-#define OSC_FREQ_PI4                             (OSC_FREQ * 2)
+#define OSC_FREQ_PI4                             54000000   // Pi 4 crystal frequency
 
 /* 4 colors (R, G, B + W), 8 bits per byte, 3 symbols per bit + 55uS low for reset signal */
 #define LED_COLOURS                              4
