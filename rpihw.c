@@ -52,12 +52,29 @@
 #define RPI_WARRANTY_MASK                        (0x3 << 24)
 
 static const rpi_hw_t rpi_hw_info[] = {
+    //
+    // Raspberry Pi 4
+    //
+    {
+        .hwver = 0xA03111,
+        .type = RPI_HWVER_TYPE_PI4,
+        .periph_base = PERIPH_BASE_RPI4,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Pi 4 Model B - 1GB"
+    },
+    {
+        .hwver = 0xB03111,
+        .type = RPI_HWVER_TYPE_PI4,
+        .periph_base = PERIPH_BASE_RPI4,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Pi 4 Model B - 2GB"
+    },
     {
         .hwver = 0xC03111,
         .type = RPI_HWVER_TYPE_PI4,
         .periph_base = PERIPH_BASE_RPI4,
         .videocore_base = VIDEOCORE_BASE_RPI2,
-        .desc = "Pi 4"
+        .desc = "Pi 4 Model B - 4GB"
     },
     //
     // Model B Rev 1.0
