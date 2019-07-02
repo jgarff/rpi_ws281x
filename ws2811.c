@@ -56,6 +56,7 @@
 #define BUS_TO_PHYS(x)                           ((x)&~0xC0000000)
 
 #define OSC_FREQ                                 19200000   // crystal frequency
+#define OSC_FREQ_PI4                             54000000   // Pi 4 crystal frequency
 
 /* 4 colors (R, G, B + W), 8 bits per byte, 3 symbols per bit + 55uS low for reset signal */
 #define LED_COLOURS                              4
@@ -347,10 +348,18 @@ static int setup_pwm(ws2811_t *ws2811)
     uint32_t freq = ws2811->freq;
     int32_t byte_count;
 
+    const rpi_hw_t *rpi_hw = ws2811->rpi_hw;
+    const uint32_t rpi_type = rpi_hw->type;
+    uint32_t osc_freq = OSC_FREQ;
+
+    if(rpi_type == RPI_HWVER_TYPE_PI4){
+        osc_freq = OSC_FREQ_PI4;
+    }
+
     stop_pwm(ws2811);
 
     // Setup the Clock - Use OSC @ 19.2Mhz w/ 3 clocks/tick
-    cm_clk->div = CM_CLK_DIV_PASSWD | CM_CLK_DIV_DIVI(OSC_FREQ / (3 * freq));
+    cm_clk->div = CM_CLK_DIV_PASSWD | CM_CLK_DIV_DIVI(osc_freq / (3 * freq));
     cm_clk->ctl = CM_CLK_CTL_PASSWD | CM_CLK_CTL_SRC_OSC;
     cm_clk->ctl = CM_CLK_CTL_PASSWD | CM_CLK_CTL_SRC_OSC | CM_CLK_CTL_ENAB;
     usleep(10);
@@ -422,10 +431,18 @@ static int setup_pcm(ws2811_t *ws2811)
     uint32_t freq = ws2811->freq;
     int32_t byte_count;
 
+    const rpi_hw_t *rpi_hw = ws2811->rpi_hw;
+    const uint32_t rpi_type = rpi_hw->type;
+    uint32_t osc_freq = OSC_FREQ;
+
+    if(rpi_type == RPI_HWVER_TYPE_PI4){
+        osc_freq = OSC_FREQ_PI4;
+    }
+
     stop_pcm(ws2811);
 
     // Setup the PCM Clock - Use OSC @ 19.2Mhz w/ 3 clocks/tick
-    cm_clk->div = CM_CLK_DIV_PASSWD | CM_CLK_DIV_DIVI(OSC_FREQ / (3 * freq));
+    cm_clk->div = CM_CLK_DIV_PASSWD | CM_CLK_DIV_DIVI(osc_freq / (3 * freq));
     cm_clk->ctl = CM_CLK_CTL_PASSWD | CM_CLK_CTL_SRC_OSC;
     cm_clk->ctl = CM_CLK_CTL_PASSWD | CM_CLK_CTL_SRC_OSC | CM_CLK_CTL_ENAB;
     usleep(10);
