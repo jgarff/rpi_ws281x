@@ -50,7 +50,6 @@
 
 #define BUS_TO_PHYS(x) ((x)&~0xC0000000)
 
-#define OSC_FREQ                                 19200000   // crystal frequency
 
 /* 3 colors, 8 bits per byte, 3 symbols per bit + 55uS low for reset signal */
 #define LED_RESET_uS                             55
@@ -265,12 +264,16 @@ static int setup_pwm(ws2811_t *ws2811)
     volatile cm_pwm_t *cm_pwm = device->cm_pwm;
     int maxcount = max_channel_led_count(ws2811);
     uint32_t freq = ws2811->freq;
+    // jimbotel: add osc_freq variable
+    uint32_t osc_freq;
     int32_t byte_count;
 
     stop_pwm(ws2811);
 
     // Setup the PWM Clock - Use OSC @ 19.2Mhz w/ 3 clocks/tick
-    cm_pwm->div = CM_PWM_DIV_PASSWD | CM_PWM_DIV_DIVI(OSC_FREQ / (3 * freq));
+    // jimbotel: obtain right value of osc_freq from board_info.c
+    osc_freq = get_osc_freq();
+    cm_pwm->div = CM_PWM_DIV_PASSWD | CM_PWM_DIV_DIVI(osc_freq / (3 * freq));
     cm_pwm->ctl = CM_PWM_CTL_PASSWD | CM_PWM_CTL_SRC_OSC;
     cm_pwm->ctl = CM_PWM_CTL_PASSWD | CM_PWM_CTL_SRC_OSC | CM_PWM_CTL_ENAB;
     usleep(10);

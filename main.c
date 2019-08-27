@@ -51,6 +51,8 @@
 
 #define TARGET_FREQ                              WS2811_TARGET_FREQ
 #define GPIO_PIN                                 18
+// jimbotel: Note: we should avoid DMA channel 5 on raspberry pi according to https://github.com/beyondscreen/node-rpi-ws281x-native/issues/90#61
+// jimbotel: pigpio module defines PI_DEFAULT_DMA_PRIMARY_CHANNEL = 14 for the Pi3 and below (7 for the Pi4), and PI_DEFAULT_DMA_SECONDARY_CHANNEL = 6 in all cases.
 #define DMA                                      5
 
 #define WIDTH                                    3
