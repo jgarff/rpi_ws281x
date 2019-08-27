@@ -395,7 +395,9 @@ const rpi_hw_t *rpi_hw_detect(void)
     {
         return NULL;
     }
-    fread(&rev, sizeof(uint32_t), 1, f);
+    size_t read = fread(&rev, sizeof(uint32_t), 1, f);
+    if (read != sizeof(uint32_t))
+        goto done;
     #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
         rev = bswap_32(rev);  // linux,revision appears to be in big endian
     #endif
