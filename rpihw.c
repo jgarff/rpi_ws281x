@@ -74,7 +74,14 @@ static const rpi_hw_t rpi_hw_info[] = {
         .type = RPI_HWVER_TYPE_PI4,
         .periph_base = PERIPH_BASE_RPI4,
         .videocore_base = VIDEOCORE_BASE_RPI2,
-        .desc = "Pi 4 Model B - 4GB"
+        .desc = "Pi 4 Model B - 4GB v1.1"
+    },
+    {
+        .hwver = 0xC03112,
+        .type = RPI_HWVER_TYPE_PI4,
+        .periph_base = PERIPH_BASE_RPI4,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Pi 4 Model B - 4GB v1.2"
     },
     //
     // Model B Rev 1.0
