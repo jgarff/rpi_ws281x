@@ -60,14 +60,14 @@ static const rpi_hw_t rpi_hw_info[] = {
         .type = RPI_HWVER_TYPE_PI4,
         .periph_base = PERIPH_BASE_RPI4,
         .videocore_base = VIDEOCORE_BASE_RPI2,
-        .desc = "Pi 4 Model B - 1GB"
+        .desc = "Pi 4 Model B - 1GB v1.1"
     },
     {
         .hwver = 0xB03111,
         .type = RPI_HWVER_TYPE_PI4,
         .periph_base = PERIPH_BASE_RPI4,
         .videocore_base = VIDEOCORE_BASE_RPI2,
-        .desc = "Pi 4 Model B - 2GB"
+        .desc = "Pi 4 Model B - 2GB v.1.1"
     },
     {
         .hwver = 0xC03111,
@@ -75,6 +75,20 @@ static const rpi_hw_t rpi_hw_info[] = {
         .periph_base = PERIPH_BASE_RPI4,
         .videocore_base = VIDEOCORE_BASE_RPI2,
         .desc = "Pi 4 Model B - 4GB v1.1"
+    },
+    {
+        .hwver = 0xA03112,
+        .type = RPI_HWVER_TYPE_PI4,
+        .periph_base = PERIPH_BASE_RPI4,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Pi 4 Model B - 1GB v1.2"
+    },
+    {
+        .hwver = 0xB03112,
+        .type = RPI_HWVER_TYPE_PI4,
+        .periph_base = PERIPH_BASE_RPI4,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Pi 4 Model B - 2GB v.1.2"
     },
     {
         .hwver = 0xC03112,
