@@ -84,7 +84,7 @@ for deb_file in debian_files:
     package_files.append(
         tools_env.Command('%s/%s' % (package_name, deb_file), deb_file, [
             Copy("$TARGET", "$SOURCE"),
-            Chmod("$TARGET", 0755)
+            Chmod("$TARGET", 0o755)
         ])
     )
 
