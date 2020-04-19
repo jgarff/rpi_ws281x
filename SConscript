@@ -32,22 +32,38 @@ Import(['clean_envs'])
 tools_env = clean_envs['userspace'].Clone()
 
 
-# Build Library
+# Build Libraries
 lib_srcs = Split('''
+    matrix_map.c
+''')
+
+lib_rpi_srcs = Split('''
     mailbox.c
-    ws2811.c
     pwm.c
     pcm.c
     dma.c
     rpihw.c
-''')
+    ws2811.c
+''') + lib_srcs
+
+lib_fpga_srcs = Split('''
+    fpga.c
+    ws2811_fpga.c
+''') + lib_srcs
+
+
+if tools_env['HARDWARE'] == 'FPGA':
+    target_lib_srcs = lib_fpga_srcs
+else:
+    target_lib_srcs = lib_rpi_srcs
+
 
 version_hdr = tools_env.Version('version')
-ws2811_lib = tools_env.Library('libws2811', lib_srcs)
+ws2811_lib = tools_env.Library('libws2811', target_lib_srcs)
 tools_env['LIBS'].append(ws2811_lib)
 
 # Shared library (if required)
-ws2811_slib = tools_env.SharedLibrary('libws2811', lib_srcs)
+ws2811_slib = tools_env.SharedLibrary('libws2811', target_lib_srcs)
 
 # Test Program
 srcs = Split('''

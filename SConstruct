@@ -32,8 +32,16 @@ import os
 
 opts = Variables()
 opts.Add(BoolVariable('V',
-                      'Verbose build',
+                      'Verbose Build',
                       False))
+
+opts.Add(BoolVariable('D',
+                      'Debug Build',
+                      False))
+
+opts.Add('HARDWARE',
+         'Set library target (RPI, FPGA)',
+         'RPI')
 
 opts.Add('TOOLCHAIN',
          'Set toolchain for cross compilation (e.g. arm-linux-gnueabihf)',

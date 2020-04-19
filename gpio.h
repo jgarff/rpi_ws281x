@@ -1,7 +1,7 @@
 /*
  * gpio.h
  *
- * Copyright (c) 2014 Jeremy Garff <jer @ jers.net>
+ * Copyright (c) 2014-2020 Jeremy Garff <jer @ jers.net>
  *
  * All rights reserved.
  *
@@ -93,6 +93,14 @@ static inline void gpio_level_set(volatile gpio_t *gpio, uint8_t pin, uint8_t le
     {
         gpio->clr[regnum] = (1 << offset);
     }
+}
+
+static inline int gpio_level_get(volatile gpio_t *gpio, uint8_t pin)
+{
+    int regnum = pin >> 5;
+    int offset = (pin & 0x1f);
+
+    return (gpio->lev[regnum] >> offset) & 0x1;
 }
 
 static inline void gpio_output_set(volatile gpio_t *gpio, uint8_t pin, uint8_t output)

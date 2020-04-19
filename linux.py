@@ -1,7 +1,7 @@
 #
 # linux.py
 #
-# Copyright (c) 2014 Jeremy Garff <jer @ jers.net>
+# Copyright (c) 2014-2020 Jeremy Garff <jer @ jers.net>
 #
 # All rights reserved.
 #
@@ -49,16 +49,27 @@ def linux_tools(env):
         env['RANLIBCOMSTR']  = 'RANLIB  ${TARGET}'
 
 def linux_flags(env):
-    env.MergeFlags({
-        'CPPFLAGS' : '''
+    cflags = '''
             -fPIC
-            -g
-            -O2
             -Wall
             -Wextra
             -Werror
-        '''.split(),
-    }),
+    '''.split()
+
+    if env['V']:
+        env.MergeFlags({
+            'CPPFLAGS': '''
+                -O0
+                -g
+            '''.split().append(cflags)
+        })
+    else:
+        env.MergeFlags({
+            'CPPFLAGS': '''
+                -O2
+            '''.split().append(cflags)
+        })
+
     env.MergeFlags({
         'LINKFLAGS' : '''
         '''.split()
