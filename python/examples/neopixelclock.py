@@ -10,7 +10,7 @@ import time
 import datetime
 import math
 
-from neopixel import *
+from rpi_ws281x import *
 
 # LED strip configuration:
 LED_COUNT = 12      # Number of LED pixels.
