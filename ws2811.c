@@ -693,9 +693,9 @@ static int check_hwver_and_gpionum(ws2811_t *ws2811)
 {
     const rpi_hw_t *rpi_hw;
     int hwver, gpionum;
-    int gpionums_B1[] = { 10, 20, 18, 21 };
-    int gpionums_B2[] = { 10, 20, 18, 31 };
-    int gpionums_40p[] = { 10, 20, 12, 18, 21};
+    int gpionums_B1[] = { 10, 18, 21 };
+    int gpionums_B2[] = { 10, 18, 31 };
+    int gpionums_40p[] = { 10, 12, 18, 20, 21};
     int i;
 
     rpi_hw = ws2811->rpi_hw;
