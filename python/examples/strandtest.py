@@ -77,7 +77,89 @@ def theaterChaseRainbow(strip, wait_ms=50):
             time.sleep(wait_ms/1000.0)
             for i in range(0, strip.numPixels(), 3):
                 strip.setPixelColor(i+q, 0)
+                
+def pulsing_light(strip, wait_ms=50, iterations=10):
+    """Show a pulsing light with increasing  and decreasing circular brightness """
+    import math
+    position = 0
+    for i in range(strip.numPixels() * 2):
+        position = position+1
+        for j in range(strip.numPixels()):
+            strip.setPixelColor(j,Color(round(((math.sin(j+position) * 127 + 128)/255)*255),round(((math.sin(j+position) * 127 + 128) /255)*100), round(((math.sin(j+position) * 127 + 128) /255)*100)))
+        strip.show()
+        time.sleep(wait_ms/1000.0)
 
+def strobe(strip, wait_ms=400, strobe_count=7, pulse_count=12):
+    from random import randrange
+    """Shows an bright light reflex with different pulse"""
+    for strobe in range(strobe_count):    
+        for pulse in range(pulse_count):
+            for i in range(strip.numPixels()):
+                strip.setPixelColorRGB(i, 255,255,255)
+            strip.show()
+            time.sleep(randrange(0,45,1)/1000.0)
+            for i in range(strip.numPixels()):
+                strip.setPixelColorRGB(i, 0,0,0)
+            strip.show()
+        time.sleep(wait_ms/1000.0)
+        
+def snow_sparkle(strip,sparkle_delay=20):
+    """Shows different pixel flickering on LED Strip"""
+    from random import randint
+    pixel= randint(0,strip.numPixels())
+    speed_delay=randint(100,1000)
+    for i in range(strip.numPixels()):
+        strip.setPixelColor(i, Color(0x10,0x10,0x10))
+    strip.show()
+    time.sleep(speed_delay/1000.0)
+    strip.setPixelColorRGB(pixel, 255,255,255)
+    strip.show()
+    time.sleep(sparkle_delay/1000.0)
+    
+def bouncing_balls(strip, playtime, ball_count=2, wait_ms=200):
+    """Shows an accelerated pixel with physical behavour like a ball in a flipper game"""
+    import time, math
+    start_time = time.time()
+    ClockTimeSinceLastBounce = [0 for i in range(ball_count)]
+    StartHeight=1
+
+    for i in range(ball_count):
+        ClockTimeSinceLastBounce[i] = time.time()
+    
+    Height = [0 for i in range(ball_count)]
+    Position = [0 for i in range(ball_count)]
+    ImpactVelocity = [0 for i in range(ball_count)]
+    ImpactVelocityStart= math.sqrt(-2 * -9.81 * 1)
+    Dampening = [0 for i in range(ball_count)]
+    TimeSinceLastBounce = [0 for i in range(ball_count)]
+
+    for i in range(0,ball_count,1):
+        last_ClockTimeSinceLastBounce = ClockTimeSinceLastBounce[i]
+        ClockTimeSinceLastBounce[i] = time.time() - last_ClockTimeSinceLastBounce
+
+        Height[i] = StartHeight
+        Position[i] = 0
+        ImpactVelocity[i] = math.sqrt(-2 * -9.81 * 1)
+        TimeSinceLastBounce[i] = 0
+        Dampening[i] = 0.90 - (float(i)/(ball_count**2))
+    act_time = time.time()
+    while ((act_time+ playtime)> time.time()):
+        for i in range(ball_count):
+            TimeSinceLastBounce[i] = time.time() - ClockTimeSinceLastBounce[i]
+            Height[i] = 0.5 * (-9.81) * (TimeSinceLastBounce[i]**2) + ImpactVelocity[i] * TimeSinceLastBounce[i]
+            if (Height[i] < 0):
+                Height[i] = 0
+                ImpactVelocity[i] = Dampening[i] * ImpactVelocity[i]
+                ClockTimeSinceLastBounce[i] = time.time()
+                if (ImpactVelocity[i] < 0.01):
+                    ImpactVelocity[i] = ImpactVelocityStart
+                                  
+            Position[i] = round(Height[i] * (strip.numPixels()-1)/StartHeight)   #Hier wird die relative Höhe auf die absolute Höhe mit der LED Anzahl umgewandelt.
+        for i in range(ball_count):
+            strip.setPixelColorRGB(Position[i], 0, 0,255)    
+        strip.show()
+        for i in range(strip.numPixels()):
+            strip.setPixelColorRGB(i, 0,0,0)
 # Main program logic follows:
 if __name__ == '__main__':
     # Process arguments
@@ -109,6 +191,21 @@ if __name__ == '__main__':
             rainbow(strip)
             rainbowCycle(strip)
             theaterChaseRainbow(strip)
+            print ('Pulsing light animation for 15 Seconds')
+            act_time = time.time()
+            while (time.time()< (act_time + 15)):
+                pulsing_light(strip)
+            print('Strobe light animation for 15 Seconds')
+            act_time = time.time()
+            while (time.time() < (act_time +15)):
+                strobe(strip)
+            print('Snow sparkle animation for 15 Seconds')
+            act_time = time.time()
+            while  (time.time() < (act_time +15)):
+	            snow_sparkle(strip)
+            print('Bouncing Ball animation for 15 Seconds')
+            bouncing_balls(strip, 15)
+            
 
     except KeyboardInterrupt:
         if args.clear:
