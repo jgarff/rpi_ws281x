@@ -154,7 +154,7 @@ def bouncing_balls(strip, playtime, ball_count=2, wait_ms=200):
                 if (ImpactVelocity[i] < 0.01):
                     ImpactVelocity[i] = ImpactVelocityStart
                                   
-            Position[i] = round(Height[i] * (strip.numPixels()-1)/StartHeight)   #Hier wird die relative Höhe auf die absolute Höhe mit der LED Anzahl umgewandelt.
+            Position[i] = round(Height[i] * (strip.numPixels()-1)/StartHeight)   
         for i in range(ball_count):
             strip.setPixelColorRGB(Position[i], 0, 0,255)    
         strip.show()
