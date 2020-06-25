@@ -117,7 +117,7 @@ def snow_sparkle(strip,sparkle_delay=20):
     time.sleep(sparkle_delay/1000.0)
     
 def bouncing_balls(strip, playtime, ball_count=2, wait_ms=200):
-    """Shows an accelerated pixel with physical behavour like a ball in a flipper game"""
+    """Shows an accelerated pixel with physicslike a ball in a flipper game"""
     import time, math
     start_time = time.time()
     ClockTimeSinceLastBounce = [0 for i in range(ball_count)]
