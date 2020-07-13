@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# NeoPixel library light-painting example
+# rpi_ws281x library light-painting example
 # Author: Gary Servin (garyservin@gmail.com)
 #
 # Lightpainting example for displaying images one column at a time and capturing
@@ -7,7 +7,7 @@
 # Based on https://github.com/scottjgibson/PixelPi
 
 import time
-from neopixel import *
+from rpi_ws281x import *
 import argparse
 
 # Button
