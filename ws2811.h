@@ -122,7 +122,7 @@ void ws2811_fini(ws2811_t *ws2811);                                    //< Tear 
 ws2811_return_t ws2811_render(ws2811_t *ws2811);                       //< Send LEDs off to hardware
 ws2811_return_t ws2811_wait(ws2811_t *ws2811);                         //< Wait for DMA completion
 const char * ws2811_get_return_t_str(const ws2811_return_t state);     //< Get string representation of the given return state
-void setCustomGammaFactor(ws2811_t *ws2811, double gammaFactor); //Set a custom Gamma correction array based on a gamma correction factor
+void ws2811_set_custom_gamma_factor(ws2811_t *ws2811, double gamma_factor);     //< Set a custom Gamma correction array based on a gamma correction factor
 
 #ifdef __cplusplus
 }

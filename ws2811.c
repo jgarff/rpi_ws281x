@@ -1284,7 +1284,7 @@ const char * ws2811_get_return_t_str(const ws2811_return_t state)
 }
 
 
-void setCustomGammaFactor(ws2811_t *ws2811, double gammaFactor)
+void ws2811_set_custom_gamma_factor(ws2811_t *ws2811, double gamma_factor)
 {
     for (int chan = 0; chan < RPI_PWM_CHANNELS; chan++)
     {
@@ -1295,7 +1295,7 @@ void setCustomGammaFactor(ws2811_t *ws2811, double gammaFactor)
           for(int counter = 0; counter < 256; counter++)
           {
 
-             channel->gamma[counter] = (gammaFactor > 0)? (int)(pow((float)counter / (float)255.00, gammaFactor) * 255.00 + 0.5) : counter;
+             channel->gamma[counter] = (gamma_factor > 0)? (int)(pow((float)counter / (float)255.00, gamma_factor) * 255.00 + 0.5) : counter;
 
           }
         }
