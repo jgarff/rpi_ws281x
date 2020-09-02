@@ -14,6 +14,8 @@ project(rpi_ws281x VERSION ${PROJECT_VERSION})
 option(BUILD_SHARED "Build as shared library" OFF)
 option(BUILD_TEST "Build test application" ON)
 
+set(CMAKE_C_STANDARD 11)
+
 set(LIB_TARGET ws2811)
 set(TEST_TARGET test)
 
