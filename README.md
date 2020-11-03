@@ -85,12 +85,32 @@ reponsibility for damage, harm, or mistakes.
 
 ### Build:
 
+#### Build with SCons:
+
 - Install Scons (on raspbian, `apt-get install scons`).
 - Make sure to adjust the parameters in main.c to suit your hardware.
   - Signal rate (400kHz to 800kHz).  Default 800kHz.
   - ledstring.invert=1 if using a inverting level shifter.
   - Width and height of LED matrix (height=1 for LED string).
 - Type `scons` from inside the source directory.
+
+#### Build and install with CMake:
+
+- Install CMake
+- Configure your build:
+
+  For example:
+  ```
+  mkdir build
+  cd build
+  cmake -D BUILD_SHARED=OFF -D BUILD_TEST=ON ..
+  ```
+  See also for available options in `CMakeLists.txt`.
+- Type `cmake --build .` to build
+- To install built binaries and headers into your system type:
+  ```
+  sudo make install
+  ```
 
 ### Running:
 

@@ -626,12 +626,12 @@ void ws2811_cleanup(ws2811_t *ws2811)
 
     for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)
     {
-        if (ws2811->channel && ws2811->channel[chan].leds)
+        if (ws2811->channel[chan].leds)
         {
             free(ws2811->channel[chan].leds);
         }
         ws2811->channel[chan].leds = NULL;
-        if (ws2811->channel && ws2811->channel[chan].gamma)
+        if (ws2811->channel[chan].gamma)
         {
             free(ws2811->channel[chan].gamma);
         }
