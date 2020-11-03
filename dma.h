@@ -30,6 +30,7 @@
 #ifndef __DMA_H__
 #define __DMA_H__
 
+#include <stdint.h>
 
 /*
  * DMA Control Block in Main Memory

@@ -35,6 +35,8 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 #include "rpihw.h"
 #include "pwm.h"
 

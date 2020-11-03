@@ -53,6 +53,16 @@
 
 static const rpi_hw_t rpi_hw_info[] = {
     //
+    // Raspberry Pi 400
+    //
+    {
+        .hwver = 0xc03130,
+        .type = RPI_HWVER_TYPE_PI4,
+        .periph_base = PERIPH_BASE_RPI4,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Pi 400 - 4GB v1.0"
+    },
+    //
     // Raspberry Pi 4
     //
     {
@@ -103,6 +113,13 @@ static const rpi_hw_t rpi_hw_info[] = {
         .periph_base = PERIPH_BASE_RPI4,
         .videocore_base = VIDEOCORE_BASE_RPI2,
         .desc = "Pi 4 Model B - 8GB v1.2"
+    },
+    {
+        .hwver = 0xb03114,
+        .type = RPI_HWVER_TYPE_PI4,
+        .periph_base = PERIPH_BASE_RPI4,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Pi 4 Model B - 2GB v1.4"
     },
     //
     // Model B Rev 1.0

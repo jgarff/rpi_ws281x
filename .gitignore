@@ -6,3 +6,8 @@ newtest
 *.o
 *.a
 *.swp
+
+build/
+release/
+debug/
+settings.json
