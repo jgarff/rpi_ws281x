@@ -50,6 +50,7 @@ set(DEST_LIB_DIR lib)
 
 if(BUILD_SHARED) 
     add_library(${LIB_TARGET} SHARED ${LIB_SOURCES})
+    target_link_libraries(${LIB_TARGET} m)
     set_target_properties(${LIB_TARGET} PROPERTIES PUBLIC_HEADER "${LIB_PUBLIC_HEADERS}")
     install(TARGETS ${LIB_TARGET} 
         LIBRARY DESTINATION ${DEST_LIB_DIR}
@@ -57,6 +58,7 @@ if(BUILD_SHARED)
     )
 else()
     add_library(${LIB_TARGET} ${LIB_SOURCES})
+    target_link_libraries(${LIB_TARGET} m)
     set_target_properties(${LIB_TARGET} PROPERTIES PUBLIC_HEADER "${LIB_PUBLIC_HEADERS}")
     install(TARGETS ${LIB_TARGET} 
         ARCHIVE DESTINATION ${DEST_LIB_DIR}
