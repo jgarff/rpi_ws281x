@@ -48,6 +48,7 @@ platforms = [
             ],
             'LINKFLAGS' : [
                 "-lrt",
+                "-lm",
             ],
         },
     ], 

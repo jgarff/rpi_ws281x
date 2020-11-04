@@ -119,11 +119,12 @@ typedef enum {
     WS2811_RETURN_STATE_COUNT
 } ws2811_return_t;
 
-ws2811_return_t ws2811_init(ws2811_t *ws2811);                         //< Initialize buffers/hardware
-void ws2811_fini(ws2811_t *ws2811);                                    //< Tear it all down
-ws2811_return_t ws2811_render(ws2811_t *ws2811);                       //< Send LEDs off to hardware
-ws2811_return_t ws2811_wait(ws2811_t *ws2811);                         //< Wait for DMA completion
-const char * ws2811_get_return_t_str(const ws2811_return_t state);     //< Get string representation of the given return state
+ws2811_return_t ws2811_init(ws2811_t *ws2811);                                  //< Initialize buffers/hardware
+void ws2811_fini(ws2811_t *ws2811);                                             //< Tear it all down
+ws2811_return_t ws2811_render(ws2811_t *ws2811);                                //< Send LEDs off to hardware
+ws2811_return_t ws2811_wait(ws2811_t *ws2811);                                  //< Wait for DMA completion
+const char * ws2811_get_return_t_str(const ws2811_return_t state);              //< Get string representation of the given return state
+void ws2811_set_custom_gamma_factor(ws2811_t *ws2811, double gamma_factor);     //< Set a custom Gamma correction array based on a gamma correction factor
 
 #ifdef __cplusplus
 }
