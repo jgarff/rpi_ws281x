@@ -45,6 +45,12 @@ set(TEST_SOURCES
 
 configure_file(version.h.in version.h)
 
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/pkg-config.pc.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/libws2811.pc"
+    @ONLY
+)
+
 set(DEST_HEADERS_DIR include/ws2811)
 set(DEST_LIB_DIR lib)
 
@@ -56,10 +62,14 @@ endif()
 
 target_link_libraries(${LIB_TARGET} m)
 set_target_properties(${LIB_TARGET} PROPERTIES PUBLIC_HEADER "${LIB_PUBLIC_HEADERS}")
+
 install(TARGETS ${LIB_TARGET}
     ARCHIVE DESTINATION ${DEST_LIB_DIR}
     PUBLIC_HEADER DESTINATION ${DEST_HEADERS_DIR}
 )
+
+INSTALL(FILES "${CMAKE_BINARY_DIR}/libws2811.pc"
+        DESTINATION lib/pkgconfig)
 
 if(BUILD_TEST)
     include_directories(${CMAKE_CURRENT_BINARY_DIR})
