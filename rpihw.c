@@ -256,7 +256,7 @@ static const rpi_hw_t rpi_hw_info[] = {
         .videocore_base = VIDEOCORE_BASE_RPI,
         .desc = "Compute Module 1",
     },
-{
+    {
         .hwver = 0xb03140,
         .type = RPI_HWVER_TYPE_PI4,
         .periph_base = PERIPH_BASE_RPI4,
