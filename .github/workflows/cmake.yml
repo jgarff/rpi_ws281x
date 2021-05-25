@@ -1,0 +1,44 @@
+name: CMake
+
+on:
+  push:
+  pull_request:
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    name: ${{matrix.name}}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-20.04
+            name: Linux
+            cache-key: linux
+            cmake-args: ''
+            apt-packages: build-essential
+
+    runs-on: ${{matrix.os}}
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install deps
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt update && sudo apt install ${{matrix.apt-packages}}
+
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE ${{matrix.cmake-args}}
+
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: |
+        cmake --build . --config $BUILD_TYPE -j 2
