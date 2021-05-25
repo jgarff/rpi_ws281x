@@ -152,6 +152,13 @@ static const rpi_hw_t rpi_hw_info[] = {
         .videocore_base = VIDEOCORE_BASE_RPI2,
         .desc = "Compute Module 4 v1.0 WiFi"
     },
+    {
+        .hwver = 0xd03140,
+        .type = RPI_HWVER_TYPE_PI4,
+        .periph_base = PERIPH_BASE_RPI4,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Compute Module 4 v1.0 WiFi 8GB"
+    },
     //
     // Model B Rev 1.0
     //
