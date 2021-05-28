@@ -43,6 +43,8 @@ set(TEST_SOURCES
     main.c
 )
 
+include(GNUInstallDirs)
+
 configure_file(version.h.in version.h)
 
 configure_file(
