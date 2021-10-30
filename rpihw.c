@@ -334,6 +334,17 @@ static const rpi_hw_t rpi_hw_info[] = {
         .desc = "Pi Zero W v1.1",
     },
 
+    // 
+    // Model Zero 2 W
+    // 
+    {
+        .hwver  = 0x902120,
+        .type = RPI_HWVER_TYPE_PI2,
+        .periph_base = PERIPH_BASE_RPI2,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Pi Zero 2 W v1.0",
+    },
+
     //
     // Model A+
     //
