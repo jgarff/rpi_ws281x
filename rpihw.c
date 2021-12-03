@@ -62,6 +62,13 @@ static const rpi_hw_t rpi_hw_info[] = {
         .videocore_base = VIDEOCORE_BASE_RPI2,
         .desc = "Pi 400 - 4GB v1.0"
     },
+    {
+        .hwver = 0xc03131,
+        .type = RPI_HWVER_TYPE_PI4,
+        .periph_base = PERIPH_BASE_RPI4,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Pi 400 - 4GB v1.1"
+    },
     //
     // Raspberry Pi 4
     //
