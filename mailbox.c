@@ -106,6 +106,26 @@ static int mbox_property(int file_desc, void *buf) {
     return ret_val;
 }
 
+uint32_t get_hwver(int file_desc) {
+    int i=0;
+    uint32_t p[32];
+
+    p[i++] = 0; // size
+    p[i++] = 0x00000000; // process request
+
+    p[i++] = 0x10002; // (the tag id)
+    p[i++] = 4; // (size of the buffer)
+    p[i++] = 0; // (size of the data)
+    p[i++] = 0; // (buffer)
+
+    p[i++] = 0x00000000; // end tag
+    p[0] = i*sizeof *p; // actual size
+
+    mbox_property(file_desc, p);
+
+    return p[5];
+}
+
 uint32_t mem_alloc(int file_desc, uint32_t size, uint32_t align, uint32_t flags) {
     int i=0;
     uint32_t p[32];
