@@ -82,16 +82,16 @@ ws2811_t ledstring =
         [0] =
         {
             .gpionum = GPIO_PIN,
-            .count = LED_COUNT,
             .invert = 0,
-            .brightness = 255,
+            .count = LED_COUNT,
             .strip_type = STRIP_TYPE,
+            .brightness = 255,
         },
         [1] =
         {
             .gpionum = 0,
-            .count = 0,
             .invert = 0,
+            .count = 0,
             .brightness = 0,
         },
     },
