@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: rpi-ws281x
+Version: 1.0.0
+Summary: Userspace Raspberry Pi PWM library for WS281X LEDs.
+Home-page: https://github.com/jgarff/rpi_ws281x/
+Author: Jeremy Garff
+Author-email: jer@jers.net
+License: MIT
+Description: UNKNOWN
+Platform: UNKNOWN

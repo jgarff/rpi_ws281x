@@ -62,6 +62,13 @@ static const rpi_hw_t rpi_hw_info[] = {
         .videocore_base = VIDEOCORE_BASE_RPI2,
         .desc = "Pi 400 - 4GB v1.0"
     },
+    {
+        .hwver = 0xc03131,
+        .type = RPI_HWVER_TYPE_PI4,
+        .periph_base = PERIPH_BASE_RPI4,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Pi 400 - 4GB v1.1"
+    },
     //
     // Raspberry Pi 4
     //
@@ -128,7 +135,35 @@ static const rpi_hw_t rpi_hw_info[] = {
         .videocore_base = VIDEOCORE_BASE_RPI2,
         .desc = "Pi 4 Model B - 4GB v1.4"
     },
-    //	
+    {
+        .hwver = 0xa03115,
+        .type = RPI_HWVER_TYPE_PI4,
+        .periph_base = PERIPH_BASE_RPI4,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Pi 4 Model B - 1GB v1.5"
+    },
+    {
+        .hwver = 0xb03115,
+        .type = RPI_HWVER_TYPE_PI4,
+        .periph_base = PERIPH_BASE_RPI4,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Pi 4 Model B - 2GB v1.5"
+    },
+    {
+        .hwver = 0xc03115,
+        .type = RPI_HWVER_TYPE_PI4,
+        .periph_base = PERIPH_BASE_RPI4,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Pi 4 Model B - 4GB v1.5"
+    },
+    { 
+        .hwver = 0xd03115,
+        .type = RPI_HWVER_TYPE_PI4,
+        .periph_base = PERIPH_BASE_RPI4,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Pi 4 Model B - 8GB v1.5"
+    },
+    //
     // Compute Module 4
     //
     {
@@ -151,6 +186,13 @@ static const rpi_hw_t rpi_hw_info[] = {
         .periph_base = PERIPH_BASE_RPI4,
         .videocore_base = VIDEOCORE_BASE_RPI2,
         .desc = "Compute Module 4 v1.0 WiFi"
+    },
+    {
+        .hwver = 0xd03140,
+        .type = RPI_HWVER_TYPE_PI4,
+        .periph_base = PERIPH_BASE_RPI4,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Compute Module 4 v1.0 WiFi 8GB"
     },
     //
     // Model B Rev 1.0
@@ -327,6 +369,17 @@ static const rpi_hw_t rpi_hw_info[] = {
         .desc = "Pi Zero W v1.1",
     },
 
+    // 
+    // Model Zero 2 W
+    // 
+    {
+        .hwver  = 0x902120,
+        .type = RPI_HWVER_TYPE_PI2,
+        .periph_base = PERIPH_BASE_RPI2,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Pi Zero 2 W v1.0",
+    },
+
     //
     // Model A+
     //
@@ -404,7 +457,7 @@ static const rpi_hw_t rpi_hw_info[] = {
         .desc = "Pi 3",
     },
     {
-	.hwver  = 0xa02083,
+        .hwver  = 0xa02083,
         .type = RPI_HWVER_TYPE_PI2,
         .periph_base = PERIPH_BASE_RPI2,
         .videocore_base = VIDEOCORE_BASE_RPI2,
