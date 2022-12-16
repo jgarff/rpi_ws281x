@@ -58,11 +58,21 @@
 #define OSC_FREQ                                 19200000   // crystal frequency
 #define OSC_FREQ_PI4                             54000000   // Pi 4 crystal frequency
 
+// Symbol definitions
+#define SYMBOL_HIGH                              0b1110
+#define SYMBOL_LOW                               0b1000
+
+// Symbol definitions for software inversion (PCM and SPI only)
+#define SYMBOL_HIGH_INV                          0b0001
+#define SYMBOL_LOW_INV                           0b0111
+
+#define SYMBOL_LEN                               ((int)log2(SYMBOL_HIGH)+1)
+
 /* 4 colors (R, G, B + W), 8 bits per byte, 3 symbols per bit + 55uS low for reset signal */
 #define LED_COLOURS                              4
-#define LED_RESET_uS                             55
-#define LED_BIT_COUNT(leds, freq)                ((leds * LED_COLOURS * 8 * 3) + ((LED_RESET_uS * \
-                                                  (freq * 3)) / 1000000))
+#define LED_RESET_uS                             SYMBOL_LEN == 3 ? 55 : 300
+#define LED_BIT_COUNT(leds, freq)                ((leds * LED_COLOURS * 8 * SYMBOL_LEN) + ((LED_RESET_uS * \
+                                                  (freq * SYMBOL_LEN)) / 1000000))
 
 /* Minimum time to wait for reset to occur in microseconds. */
 #define LED_RESET_WAIT_TIME                      300
@@ -71,14 +81,6 @@
 #define PWM_BYTE_COUNT(leds, freq)               (((((LED_BIT_COUNT(leds, freq) >> 3) & ~0x7) + 4) + 4) * \
                                                   RPI_PWM_CHANNELS)
 #define PCM_BYTE_COUNT(leds, freq)               ((((LED_BIT_COUNT(leds, freq) >> 3) & ~0x7) + 4) + 4)
-
-// Symbol definitions
-#define SYMBOL_HIGH                              0x6  // 1 1 0
-#define SYMBOL_LOW                               0x4  // 1 0 0
-
-// Symbol definitions for software inversion (PCM and SPI only)
-#define SYMBOL_HIGH_INV                          0x1  // 0 0 1
-#define SYMBOL_LOW_INV                           0x3  // 0 1 1
 
 // Driver mode definitions
 #define NONE	0
@@ -359,7 +361,7 @@ static int setup_pwm(ws2811_t *ws2811)
     stop_pwm(ws2811);
 
     // Setup the Clock - Use OSC @ 19.2Mhz w/ 3 clocks/tick
-    cm_clk->div = CM_CLK_DIV_PASSWD | CM_CLK_DIV_DIVI(osc_freq / (3 * freq));
+    cm_clk->div = CM_CLK_DIV_PASSWD | CM_CLK_DIV_DIVI(osc_freq / (SYMBOL_LEN * freq));
     cm_clk->ctl = CM_CLK_CTL_PASSWD | CM_CLK_CTL_SRC_OSC;
     cm_clk->ctl = CM_CLK_CTL_PASSWD | CM_CLK_CTL_SRC_OSC | CM_CLK_CTL_ENAB;
     usleep(10);
@@ -442,7 +444,7 @@ static int setup_pcm(ws2811_t *ws2811)
     stop_pcm(ws2811);
 
     // Setup the PCM Clock - Use OSC @ 19.2Mhz w/ 3 clocks/tick
-    cm_clk->div = CM_CLK_DIV_PASSWD | CM_CLK_DIV_DIVI(osc_freq / (3 * freq));
+    cm_clk->div = CM_CLK_DIV_PASSWD | CM_CLK_DIV_DIVI(osc_freq / (SYMBOL_LEN * freq));
     cm_clk->ctl = CM_CLK_CTL_PASSWD | CM_CLK_CTL_SRC_OSC;
     cm_clk->ctl = CM_CLK_CTL_PASSWD | CM_CLK_CTL_SRC_OSC | CM_CLK_CTL_ENAB;
     usleep(10);
@@ -1196,7 +1198,7 @@ ws2811_return_t  ws2811_render(ws2811_t *ws2811)
                         if ((driver_mode != PWM) && channel->invert) symbol = SYMBOL_HIGH_INV;
                     }
 
-                    for (l = 2; l >= 0; l--)               // Symbol
+                    for (l = SYMBOL_LEN; l >= 0; l--)               // Symbol
                     {
                         uint32_t *wordptr = &((uint32_t *)pxl_raw)[wordpos];   // PWM & PCM
                         volatile uint8_t  *byteptr = &pxl_raw[bytepos];    // SPI
@@ -1229,7 +1231,7 @@ ws2811_return_t  ws2811_render(ws2811_t *ws2811)
                             else  // PWM & PCM
                             {
                                 // Every other word is on the same channel for PWM
-                                wordpos += (driver_mode == PWM ? 2 : 1);
+                                wordpos += (driver_mode == PWM ? RPI_PWM_CHANNELS : 1);
                                 bitpos = 31;
                             }
                         }
