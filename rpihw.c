@@ -136,6 +136,13 @@ static const rpi_hw_t rpi_hw_info[] = {
         .desc = "Pi 4 Model B - 4GB v1.4"
     },
     {
+        .hwver = 0xD03141, //CM4 8GB 32GB Wifi
+        .type = RPI_HWVER_TYPE_PI4, 
+        .periph_base = PERIPH_BASE_RPI4,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "CM4 8GB 32GB Wifi"
+    },
+    {
         .hwver = 0xa03115,
         .type = RPI_HWVER_TYPE_PI4,
         .periph_base = PERIPH_BASE_RPI4,
