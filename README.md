@@ -28,10 +28,10 @@ to the appropriate output pin.
 For SPI the Raspbian spidev driver is used (`/dev/spidev0.0`).
 This library and test program set the clock rate to 3X the desired output
 frequency and creates a bit pattern in RAM from an array of colors where
-each bit is represented by 3 bits as follows.
+each bit is represented by 4 bits as follows.
 
-    Bit 1 - 1 1 0
-    Bit 0 - 1 0 0
+    Bit 1 - 1 1 1 0
+    Bit 0 - 1 0 0 0
 
 
 ### GPIO Usage:
