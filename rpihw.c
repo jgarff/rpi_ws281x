@@ -69,6 +69,7 @@ static const rpi_hw_t rpi_hw_info[] = {
         .videocore_base = VIDEOCORE_BASE_RPI2,
         .desc = "Pi 400 - 4GB v1.1"
     },
+
     //
     // Raspberry Pi 4
     //
@@ -163,6 +164,7 @@ static const rpi_hw_t rpi_hw_info[] = {
         .videocore_base = VIDEOCORE_BASE_RPI2,
         .desc = "Pi 4 Model B - 8GB v1.5"
     },
+
     //
     // Compute Module 4
     //
@@ -194,6 +196,35 @@ static const rpi_hw_t rpi_hw_info[] = {
         .videocore_base = VIDEOCORE_BASE_RPI2,
         .desc = "Compute Module 4 v1.0 WiFi 8GB"
     },
+    {
+        .hwver = 0xa03141,
+        .type = RPI_HWVER_TYPE_PI4,
+        .periph_base = PERIPH_BASE_RPI4,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Compute Module 4 Rev 1.1"
+    },
+    {
+        .hwver = 0xb03141,
+        .type = RPI_HWVER_TYPE_PI4,
+        .periph_base = PERIPH_BASE_RPI4,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Compute Module 4 Rev 1.1"
+    },
+    {
+        .hwver = 0xc03141,
+        .type = RPI_HWVER_TYPE_PI4,
+        .periph_base = PERIPH_BASE_RPI4,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Compute Module 4 Rev 1.1"
+    },
+    {
+        .hwver = 0xd03141,
+        .type = RPI_HWVER_TYPE_PI4,
+        .periph_base = PERIPH_BASE_RPI4,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Compute Module 4 Rev 1.1"
+    },
+
     //
     // Model B Rev 1.0
     //
@@ -329,6 +360,20 @@ static const rpi_hw_t rpi_hw_info[] = {
         .videocore_base = VIDEOCORE_BASE_RPI,
         .desc = "Compute Module 1",
     },
+    {
+        .hwver  = 0xa020a0,
+        .type = RPI_HWVER_TYPE_PI2,
+        .periph_base = PERIPH_BASE_RPI2,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Compute Module 3/L3",
+    },
+    {
+        .hwver  = 0xa02100,
+        .type = RPI_HWVER_TYPE_PI2,
+        .periph_base = PERIPH_BASE_RPI2,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Compute Module 3+",
+    },
 
     //
     // Pi Zero
@@ -450,6 +495,13 @@ static const rpi_hw_t rpi_hw_info[] = {
         .desc = "Pi 3 B+",
     },
     {
+        .hwver  = 0xa32082,
+        .type = RPI_HWVER_TYPE_PI2,
+        .periph_base = PERIPH_BASE_RPI2,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Pi 3 B",
+    },
+    {
         .hwver  = 0xa02082,
         .type = RPI_HWVER_TYPE_PI2,
         .periph_base = PERIPH_BASE_RPI2,
@@ -483,61 +535,7 @@ static const rpi_hw_t rpi_hw_info[] = {
         .periph_base = PERIPH_BASE_RPI2,
         .videocore_base = VIDEOCORE_BASE_RPI2,
         .desc = "Model 3 A+",
-    },
-
-    //
-    // Pi Compute Module 3
-    //
-    {
-        .hwver  = 0xa020a0,
-        .type = RPI_HWVER_TYPE_PI2,
-        .periph_base = PERIPH_BASE_RPI2,
-        .videocore_base = VIDEOCORE_BASE_RPI2,
-        .desc = "Compute Module 3/L3",
-    },
-    //
-    // Pi Compute Module 3+
-    //
-    {
-        .hwver  = 0xa02100,
-        .type = RPI_HWVER_TYPE_PI2,
-        .periph_base = PERIPH_BASE_RPI2,
-        .videocore_base = VIDEOCORE_BASE_RPI2,
-        .desc = "Compute Module 3+",
-    },
-
-    //ComputeModule 4 Additions
-       {
-        .hwver = 0xa03141,
-        .type = RPI_HWVER_TYPE_PI4,
-        .periph_base = PERIPH_BASE_RPI4,
-        .videocore_base = VIDEOCORE_BASE_RPI2,
-        .desc = "Raspberry Pi Compute Module 4 Rev 1.1"
-    },
-
-      {
-        .hwver = 0xb03141,
-        .type = RPI_HWVER_TYPE_PI4,
-        .periph_base = PERIPH_BASE_RPI4,
-        .videocore_base = VIDEOCORE_BASE_RPI2,
-        .desc = "Raspberry Pi Compute Module 4 Rev 1.1"
-    },       {
-        .hwver = 0xc03141,
-        .type = RPI_HWVER_TYPE_PI4,
-        .periph_base = PERIPH_BASE_RPI4,
-        .videocore_base = VIDEOCORE_BASE_RPI2,
-        .desc = "Raspberry Pi Compute Module 4 Rev 1.1"
-    },
-
-      {
-        .hwver = 0xd03141,
-        .type = RPI_HWVER_TYPE_PI4,
-        .periph_base = PERIPH_BASE_RPI4,
-        .videocore_base = VIDEOCORE_BASE_RPI2,
-        .desc = "Raspberry Pi Compute Module 4 Rev 1.1"
     }
-
-
 };
 
 
