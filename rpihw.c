@@ -157,7 +157,7 @@ static const rpi_hw_t rpi_hw_info[] = {
         .videocore_base = VIDEOCORE_BASE_RPI2,
         .desc = "Pi 4 Model B - 4GB v1.5"
     },
-    { 
+    {
         .hwver = 0xd03115,
         .type = RPI_HWVER_TYPE_PI4,
         .periph_base = PERIPH_BASE_RPI4,
@@ -414,9 +414,9 @@ static const rpi_hw_t rpi_hw_info[] = {
         .desc = "Pi Zero W v1.1",
     },
 
-    // 
+    //
     // Model Zero 2 W
-    // 
+    //
     {
         .hwver  = 0x902120,
         .type = RPI_HWVER_TYPE_PI2,
@@ -487,6 +487,13 @@ static const rpi_hw_t rpi_hw_info[] = {
     //
     // Pi 3 Model B
     //
+    {
+        .hwver  = 0xa020d4,
+        .type = RPI_HWVER_TYPE_PI2,
+        .periph_base = PERIPH_BASE_RPI2,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Pi 3 B+",
+    },
     {
         .hwver  = 0xa020d3,
         .type = RPI_HWVER_TYPE_PI2,
@@ -621,4 +628,3 @@ done:
 
     return result;
 }
-
