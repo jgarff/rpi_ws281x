@@ -889,13 +889,6 @@ ws2811_return_t ws2811_init(ws2811_t *ws2811)
     const rpi_hw_t *rpi_hw;
     int chan;
 
-    ws2811->rpi_hw = rpi_hw_detect();
-    if (!ws2811->rpi_hw)
-    {
-        return WS2811_ERROR_HW_NOT_SUPPORTED;
-    }
-    rpi_hw = ws2811->rpi_hw;
-
     ws2811->device = malloc(sizeof(*ws2811->device));
     if (!ws2811->device)
     {
@@ -903,6 +896,19 @@ ws2811_return_t ws2811_init(ws2811_t *ws2811)
     }
     memset(ws2811->device, 0, sizeof(*ws2811->device));
     device = ws2811->device;
+
+    device->mbox.handle = mbox_open();
+    if (device->mbox.handle == -1)
+    {
+        return WS2811_ERROR_MAILBOX_DEVICE;
+    }
+
+    ws2811->rpi_hw = rpi_hw_detect(device->mbox.handle);
+    if (!ws2811->rpi_hw)
+    {
+        return WS2811_ERROR_HW_NOT_SUPPORTED;
+    }
+    rpi_hw = ws2811->rpi_hw;
 
     if (check_hwver_and_gpionum(ws2811) < 0)
     {
@@ -929,12 +935,6 @@ ws2811_return_t ws2811_init(ws2811_t *ws2811)
     }
     // Round up to page size multiple
     device->mbox.size = (device->mbox.size + (PAGE_SIZE - 1)) & ~(PAGE_SIZE - 1);
-
-    device->mbox.handle = mbox_open();
-    if (device->mbox.handle == -1)
-    {
-        return WS2811_ERROR_MAILBOX_DEVICE;
-    }
 
     device->mbox.mem_ref = mem_alloc(device->mbox.handle, device->mbox.size, PAGE_SIZE,
                                      rpi_hw->videocore_base == 0x40000000 ? 0xC : 0x4);
