@@ -17,6 +17,7 @@ Language-specific bindings for rpi_ws281x are available in:
 * Java - https://github.com/rpi-ws281x/rpi-ws281x-java
 * CSharp - https://github.com/rpi-ws281x/rpi-ws281x-csharp
 * Go - https://github.com/rpi-ws281x/rpi-ws281x-go
+* Swift - https://github.com/kbongort/rpi-ws281x-swift
 
 ### Background:
 
