@@ -57,7 +57,7 @@ static char VERSION[] = "XX.YY.ZZ";
 
 // defaults for cmdline options
 #define TARGET_FREQ             WS2811_TARGET_FREQ
-#define GPIO_PIN                18
+#define GPIO_PIN                12
 #define DMA                     10
 //#define STRIP_TYPE            WS2811_STRIP_RGB		// WS2812/SK6812RGB integrated chip+leds
 #define STRIP_TYPE              WS2811_STRIP_GBR		// WS2812/SK6812RGB integrated chip+leds
@@ -87,13 +87,13 @@ ws2811_t ledstring =
             .strip_type = STRIP_TYPE,
             .brightness = 255,
         },
-        [1] =
-        {
-            .gpionum = 0,
-            .invert = 0,
-            .count = 0,
-            .brightness = 0,
-        },
+        //[1] =
+        //{
+        //    .gpionum = 0,
+        //    .invert = 0,
+        //    .count = 0,
+        //    .brightness = 0,
+        //},
     },
 };
 
@@ -396,10 +396,10 @@ int main(int argc, char *argv[])
         matrix_bottom();
         matrix_render();
 
-        if ((ret = ws2811_render(&ledstring)) != WS2811_SUCCESS)
-        {
-            fprintf(stderr, "ws2811_render failed: %s\n", ws2811_get_return_t_str(ret));
-            break;
+       if ((ret = ws2811_render(&ledstring)) != WS2811_SUCCESS)
+       {
+           fprintf(stderr, "ws2811_render failed: %s\n", ws2811_get_return_t_str(ret));
+           break;
         }
 
         // 15 frames /sec
@@ -407,9 +407,9 @@ int main(int argc, char *argv[])
     }
 
     if (clear_on_exit) {
-	matrix_clear();
-	matrix_render();
-	ws2811_render(&ledstring);
+	    matrix_clear();
+	    matrix_render();
+	    ws2811_render(&ledstring);
     }
 
     ws2811_fini(&ledstring);

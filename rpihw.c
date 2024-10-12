@@ -549,6 +549,16 @@ static const rpi_hw_t rpi_hw_info[] = {
         .periph_base = PERIPH_BASE_RPI2,
         .videocore_base = VIDEOCORE_BASE_RPI2,
         .desc = "Model 3 A+",
+    },
+    //
+    // Pi 5
+    //
+    {
+        .hwver  = 0xd04170,
+        .type = RPI_HWVER_TYPE_PI5,
+        .periph_base = 0,           // uses kernel driver
+        .videocore_base = 0,        // users kernel driver
+        .desc = "Model 5B",
     }
 };
 

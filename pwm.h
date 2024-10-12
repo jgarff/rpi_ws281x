@@ -51,7 +51,7 @@
  */
 
 
-#define RPI_PWM_CHANNELS                         2
+#define RPI_PWM_CHANNELS                         1
 
 
 typedef struct

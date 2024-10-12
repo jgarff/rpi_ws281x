@@ -1,0 +1,27 @@
+/dts-v1/;
+/plugin/;
+
+/ {
+    fragment@0 {
+        target-path = "/axi/pcie@120000/rp1";
+
+        __overlay__ {
+            #address-cells = <2>;
+            #size-cells = <2>;
+
+            ws281x_pwm@98000 {
+                compatible = "rp1-ws281x-pwm";
+                clocks = <&rp1_clocks 0x11>;
+                assigned-clocks = <&rp1_clocks 0x11>;
+                assigned-clock-rates = <2400000>;
+                reg = <0xc0 0x40098000 0x00 0x100>;
+                #pwm-cells = <0x03>;
+                dmas = <&rp1_dma 0x18>;  // RP1_DMA_PWM0
+                dma-names = "pwm0";
+                status = "okay";
+            };
+    
+        };
+    };
+};
+

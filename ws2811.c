@@ -52,6 +52,8 @@
 
 #include "ws2811.h"
 
+#include "rp1_ws281x_pwm/rp1_ws281x_pwm.h"
+
 
 #define BUS_TO_PHYS(x)                           ((x)&~0xC0000000)
 
@@ -74,9 +76,10 @@
 
 // Driver mode definitions
 #define NONE	0
-#define PWM	1
-#define PCM	2
-#define SPI	3
+#define PWM     1
+#define PCM     2
+#define SPI     3
+#define KERNEL  4
 
 // We use the mailbox interface to request memory from the VideoCore.
 // This lets us request one physically contiguous chunk, find its
@@ -99,6 +102,7 @@ typedef struct ws2811_device
     volatile pwm_t *pwm;
     volatile pcm_t *pcm;
     int spi_fd;
+    int driver_fd;
     volatile dma_cb_t *dma_cb;
     uint32_t dma_cb_addr;
     volatile gpio_t *gpio;
@@ -578,7 +582,7 @@ void pwm_raw_init(ws2811_t *ws2811)
         for (i = 0; i < wordcount; i++)
         {
             pxl_raw[wordpos] = 0x0;
-            wordpos += 2;
+            wordpos += RPI_PWM_CHANNELS;
         }
     }
 }
@@ -642,7 +646,11 @@ void ws2811_cleanup(ws2811_t *ws2811)
         mbox->handle = -1;
     }
 
-    if (device && (device->spi_fd > 0))
+    if (device && (device->driver_fd >= 0)) {
+        close(device->driver_fd);
+    }
+
+    if (device && (device->spi_fd >= 0))
     {
         close(device->spi_fd);
     }
@@ -693,7 +701,12 @@ static int check_hwver_and_gpionum(ws2811_t *ws2811)
     rpi_hw = ws2811->rpi_hw;
     hwver = rpi_hw->hwver & 0x0000ffff;
     gpionum = ws2811->channel[0].gpionum;
-    if (hwver < 0x0004)  // Model B Rev 1
+
+    if (ws2811->rpi_hw->type == RPI_HWVER_TYPE_PI5) {
+        ws2811->device->driver_mode = KERNEL;
+        return 0;
+    }
+    else if (hwver < 0x0004)  // Model B Rev 1
     {
         for ( i = 0; i < (int)(sizeof(gpionums_B1) / sizeof(gpionums_B1[0])); i++)
         {
@@ -798,6 +811,8 @@ static ws2811_return_t spi_init(ws2811_t *ws2811)
     device->dma_cb_addr = 0;
     device->cm_clk = NULL;
     device->mbox.handle = -1;
+    device->spi_fd = -1;
+    device->driver_fd = -1;
 
     // Set SPI-MOSI pin
     device->gpio = mapmem(GPIO_OFFSET + base, sizeof(gpio_t), DEV_GPIOMEM);
@@ -868,6 +883,71 @@ static ws2811_return_t spi_transfer(ws2811_t *ws2811)
     return WS2811_SUCCESS;
 }
 
+int kernel_init(ws2811_t *ws2811) {
+    struct ws2811_device *device = ws2811->device;
+    int chan;
+
+    device->driver_fd = open("/dev/ws281x_pwm", O_RDWR);
+    if (device->driver_fd < 0) {
+        perror("open()");
+        return WS2811_ERROR_HW_NOT_SUPPORTED;
+    }
+
+    // TODO:  Support all the PWM channels
+
+    for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)
+    {
+        ws2811->channel[chan].leds = NULL;
+    }
+
+    for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)
+    {
+        ws2811_channel_t *channel = &ws2811->channel[chan];
+
+        channel->leds = malloc(sizeof(ws2811_led_t) * channel->count);
+        if (!channel->leds)
+        {
+            ws2811_cleanup(ws2811);
+            return WS2811_ERROR_OUT_OF_MEMORY;
+        }
+
+        memset(channel->leds, 0, sizeof(ws2811_led_t) * channel->count);
+
+        if (!channel->strip_type)
+        {
+          channel->strip_type=WS2811_STRIP_RGB;
+        }
+
+        // Set default uncorrected gamma table
+        if (!channel->gamma)
+        {
+          channel->gamma = malloc(sizeof(uint8_t) * 256);
+          if (!channel->gamma) {
+              return WS2811_ERROR_OUT_OF_MEMORY;
+          }
+          int x;
+          for(x = 0; x < 256; x++){
+            channel->gamma[x] = x;
+          }
+        }
+
+        channel->wshift = (channel->strip_type >> 24) & 0xff;
+        channel->rshift = (channel->strip_type >> 16) & 0xff;
+        channel->gshift = (channel->strip_type >> 8)  & 0xff;
+        channel->bshift = (channel->strip_type >> 0)  & 0xff;
+    }
+
+    ws2811->device->pxl_raw = malloc(PWM_BYTE_COUNT(ws2811->device->max_count, ws2811->freq));
+    if (!ws2811->device->pxl_raw) {
+        return WS2811_ERROR_OUT_OF_MEMORY;
+    }
+
+    pwm_raw_init(ws2811);
+
+    // TODO:  Initialize the GPIO pins
+
+    return WS2811_SUCCESS;
+}
 
 /*
  *
@@ -904,6 +984,10 @@ ws2811_return_t ws2811_init(ws2811_t *ws2811)
     memset(ws2811->device, 0, sizeof(*ws2811->device));
     device = ws2811->device;
 
+    device->mbox.handle = -1;
+    device->spi_fd = -1;
+    device->driver_fd = -1;
+
     if (check_hwver_and_gpionum(ws2811) < 0)
     {
         return WS2811_ERROR_ILLEGAL_GPIO;
@@ -911,8 +995,13 @@ ws2811_return_t ws2811_init(ws2811_t *ws2811)
 
     device->max_count = max_channel_led_count(ws2811);
 
-    if (device->driver_mode == SPI) {
-        return spi_init(ws2811);
+    switch(device->driver_mode) {
+        case KERNEL:
+            return kernel_init(ws2811);
+        case SPI:
+            return spi_init(ws2811);
+        default:
+            break;
     }
 
     // Determine how much physical memory we need for DMA
@@ -1099,7 +1188,10 @@ ws2811_return_t ws2811_wait(ws2811_t *ws2811)
 {
     volatile dma_t *dma = ws2811->device->dma;
 
-    if (ws2811->device->driver_mode == SPI)  // Nothing to do for SPI
+    if (ws2811->device->driver_mode == KERNEL)
+    {
+        return WS2811_SUCCESS;
+    } else if (ws2811->device->driver_mode == SPI)  // Nothing to do for SPI
     {
         return WS2811_SUCCESS;
     }
@@ -1207,6 +1299,7 @@ ws2811_return_t  ws2811_render(ws2811_t *ws2811)
     uint32_t protocol_time = 0;
     static uint64_t previous_timestamp = 0;
 
+    // TODO:  Fix the channels
     for (chan = 0; chan < RPI_PWM_CHANNELS; chan++)         // Channel
     {
         ws2811_channel_t *channel = &ws2811->channel[chan];
@@ -1253,7 +1346,7 @@ ws2811_return_t  ws2811_render(ws2811_t *ws2811)
 					if(++bytepos == 4) 
 					{ 
 						bytepos = 0; 
-						wordpos += driver_mode == PWM ? 2 : 1; 
+						wordpos += driver_mode == PWM ? RPI_PWM_CHANNELS : 1; 
 					}
 				}
             }
@@ -1275,7 +1368,15 @@ ws2811_return_t  ws2811_render(ws2811_t *ws2811)
         }
     }
 
-    if (driver_mode != SPI)
+    if (driver_mode == KERNEL) {
+        int n = write(ws2811->device->driver_fd, (void *)pxl_raw,
+                      PCM_BYTE_COUNT(ws2811->device->max_count, ws2811->freq));
+        if (n != (int)PCM_BYTE_COUNT(ws2811->device->max_count, ws2811->freq)) {
+            perror("write()");
+            return WS2811_ERROR_GENERIC;
+        }
+    }
+    else if (driver_mode != SPI)
     {
         dma_start(ws2811);
     }

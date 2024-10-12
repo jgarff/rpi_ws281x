@@ -79,10 +79,10 @@ const pwm_pin_tables_t pwm_pin_tables[RPI_PWM_CHANNELS] =
         .pins = pwm_pin_chan0,
         .count = sizeof(pwm_pin_chan0) / sizeof(pwm_pin_chan0[0]),
     },
-    {
-        .pins = pwm_pin_chan1,
-        .count = sizeof(pwm_pin_chan1) / sizeof(pwm_pin_chan1[0]),
-    },
+    //{
+    //    .pins = pwm_pin_chan1,
+    //    .count = sizeof(pwm_pin_chan1) / sizeof(pwm_pin_chan1[0]),
+    //},
 };
 
 
