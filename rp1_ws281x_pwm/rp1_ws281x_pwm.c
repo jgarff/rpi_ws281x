@@ -18,6 +18,7 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/moduleparam.h>
 #include <linux/miscdevice.h>
 #include <linux/cdev.h>
 #include <linux/of.h>
@@ -120,6 +121,8 @@ rp1_ws281x_pwm_device_t rp1_ws281x_pwm = {
     .active = 0,
 };
 
+static int pwm_channel = 2;
+
 //
 // PWM Channel Setup
 //
@@ -189,7 +192,7 @@ int rp1_ws281x_pwm_open(struct inode *inode, struct file *file) {
 
     mutex_unlock(rp1_ws281x_pwm.lock);
 
-    rp1_ws281x_pwm_init(2, 0);
+    rp1_ws281x_pwm_init(pwm_channel, 0);
 
     return 0;
 }
@@ -463,7 +466,7 @@ int rp1_ws281x_pwm_probe(struct platform_device *pdev) {
 
     platform_set_drvdata(pdev, &rp1_ws281x_pwm);
 
-    rp1_ws281x_pwm_init(2, 0);
+    rp1_ws281x_pwm_init(pwm_channel, 0);
 
     return 0;
 }
@@ -497,6 +500,8 @@ static struct platform_driver rp1_ws281x_pwm_driver = {
 	.remove = rp1_ws281x_pwm_remove,
 };
 module_platform_driver(rp1_ws281x_pwm_driver);
+
+module_param(pwm_channel, int, 0644);
 
 MODULE_AUTHOR("Jeremy Garff <jer @ jers.net>");
 MODULE_LICENSE("GPL");
