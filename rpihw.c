@@ -516,6 +516,13 @@ static const rpi_hw_t rpi_hw_info[] = {
         .desc = "Pi 3 B",
     },
     {
+        .hwver  = 0xa52082,
+        .type = RPI_HWVER_TYPE_PI2,
+        .periph_base = PERIPH_BASE_RPI2,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Pi 3 B",
+    },
+    {
         .hwver  = 0xa02082,
         .type = RPI_HWVER_TYPE_PI2,
         .periph_base = PERIPH_BASE_RPI2,
@@ -550,6 +557,13 @@ static const rpi_hw_t rpi_hw_info[] = {
         .videocore_base = VIDEOCORE_BASE_RPI2,
         .desc = "Model 3 A+",
     },
+    {
+        .hwver  = 0x9020e1,
+        .type = RPI_HWVER_TYPE_PI2,
+        .periph_base = PERIPH_BASE_RPI2,
+        .videocore_base = VIDEOCORE_BASE_RPI2,
+        .desc = "Model 3 A+",
+    },
     //
     // Pi 5
     //
@@ -566,7 +580,7 @@ static const rpi_hw_t rpi_hw_info[] = {
         .periph_base = 0,           // uses kernel driver
         .videocore_base = 0,        // uses kernel driver
         .desc = "Model 5B",
-    }
+    },
 };
 
 
