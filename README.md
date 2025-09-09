@@ -34,6 +34,13 @@ each bit is represented by 3 bits as follows.
     Bit 1 - 1 1 0
     Bit 0 - 1 0 0
 
+### Notice for Raspberry Pi 5 Users
+
+This library will likely not be updated to support the Raspberry Pi 5 or subsequent models.
+
+The hardware architecture of the Raspberry Pi 5, which utilizes the RP1 I/O controller, is fundamentally incompatible with the direct memory access (DMA) methods this library relies on.
+
+For controlling WS281x LEDs on the Raspberry Pi 5, the author recommends considering libraries that leverage the new PIO (Programmable I/O) hardware. The [piolib library](https://github.com/raspberrypi/utils/tree/master/piolib) is Raspberry Pi's own solution designed for this purpose and should be considered.
 
 ### GPIO Usage:
 
