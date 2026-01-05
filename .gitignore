@@ -8,6 +8,7 @@ newtest
 *.swp
 
 build/
+dist/
 release/
 debug/
 settings.json
