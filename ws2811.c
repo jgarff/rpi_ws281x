@@ -704,6 +704,10 @@ static int check_hwver_and_gpionum(ws2811_t *ws2811)
 
     if (ws2811->rpi_hw->type == RPI_HWVER_TYPE_PI5) {
         ws2811->device->driver_mode = KERNEL;
+        // Pi 5 uses the kernel driver and only channel 0; keep others zeroed.
+        for (i = 1; i < RPI_PWM_CHANNELS; i++) {
+            memset(&ws2811->channel[i], 0, sizeof(ws2811_channel_t));
+        }
         return 0;
     }
     else if (hwver < 0x0004)  // Model B Rev 1
