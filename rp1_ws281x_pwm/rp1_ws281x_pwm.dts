@@ -3,7 +3,7 @@
 
 / {
     fragment@0 {
-        target-path = "/axi/pcie@120000/rp1";
+        target-path = "/axi/pcie@1000120000/rp1";
 
         __overlay__ {
             #address-cells = <2>;
