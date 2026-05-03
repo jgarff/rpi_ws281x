@@ -7,6 +7,23 @@ Preliminary support is now included for SK6812RGBW LEDs (yes, RGB + W)
 The LEDs can be controlled by either the PWM (2 independent channels)
 or PCM controller (1 channel) or the SPI interface (1 channel).
 
+## Medflow Pi 5 Wheel Releases
+
+This fork publishes arm64 wheels and kernel sources for Medflow. Tagging the repo
+with `led-vX.Y.Z` triggers GitHub Actions to build and release:
+
+- `rpi_ws281x-*.whl` (arm64 wheel)
+- `rp1_ws281x_pwm.tar.gz` (kernel module sources)
+
+Consumers:
+- `Medflow-Labs/raspberry-pi-sw` (package build pulls these artifacts)
+- `Medflow-Labs/raspberry-pi-image` (image build can stage the wheel)
+
+The wheel build pins `rpi_ws281x-python` to tag `v5.0.0` by default
+(override with `RPI_WS281X_PY_REF`).
+
+Local build helper: `scripts/build-wheel.sh` (arm64 Linux only).
+
 ### Bindings:
 
 Language-specific bindings for rpi_ws281x are available in:

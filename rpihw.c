@@ -581,6 +581,27 @@ static const rpi_hw_t rpi_hw_info[] = {
         .videocore_base = 0,        // uses kernel driver
         .desc = "Model 5B",
     },
+    {
+        .hwver  = 0xb04170,
+        .type = RPI_HWVER_TYPE_PI5,
+        .periph_base = 0,           // uses kernel driver
+        .videocore_base = 0,        // uses kernel driver
+        .desc = "Model 5B - 2GB",
+    },
+    {
+        .hwver  = 0xa04170,
+        .type = RPI_HWVER_TYPE_PI5,
+        .periph_base = 0,           // uses kernel driver
+        .videocore_base = 0,        // uses kernel driver
+        .desc = "Model 5B - 2GB",
+    },
+    {
+        .hwver  = 0xa04171,
+        .type = RPI_HWVER_TYPE_PI5,
+        .periph_base = 0,           // uses kernel driver
+        .videocore_base = 0,        // uses kernel driver
+        .desc = "Model 5B - 1GB",
+    },
 };
 
 

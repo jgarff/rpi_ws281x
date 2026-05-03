@@ -1,0 +1,86 @@
+name: Build LED Wheel
+
+on:
+  push:
+    tags:
+      - 'led-v*'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref (tag or branch) to build from"
+        required: false
+        default: "pi5"
+      rpi_ws281x_py_ref:
+        description: "rpi-ws281x-python tag/branch to build against"
+        required: false
+        default: "v5.0.0"
+
+jobs:
+  build-wheel:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref }}
+
+      - name: Ensure ref is on pi5
+        run: |
+          git fetch origin pi5
+          TARGET_SHA="$(git rev-parse HEAD)"
+          if ! git merge-base --is-ancestor "${TARGET_SHA}" "origin/pi5"; then
+            echo "Ref ${TARGET_SHA} is not on origin/pi5."
+            exit 1
+          fi
+
+      - name: Set up QEMU (arm64)
+        uses: docker/setup-qemu-action@v3.7.0
+        with:
+          platforms: arm64
+
+      - name: Build wheel (arm64)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RPI_WS281X_PY_REPO: https://github.com/rpi-ws281x/rpi-ws281x-python.git
+          RPI_WS281X_PY_REF: ${{ github.event.inputs.rpi_ws281x_py_ref || 'v5.0.0' }}
+        run: |
+          mkdir -p dist
+          docker run --rm --platform linux/arm64 \
+            -e GITHUB_TOKEN \
+            -e RPI_WS281X_PY_TOKEN \
+            -e RPI_WS281X_PY_REPO \
+            -e RPI_WS281X_PY_REF \
+            -v "$PWD:/work" -w /work \
+            debian:trixie-slim bash -lc \
+            "apt-get update && apt-get install -y --no-install-recommends \
+              git=1:2.47.3-0+deb13u1 \
+              python3=3.13.5-1 \
+              python3-venv=3.13.5-1 \
+              python3-pip=25.1.1+dfsg-1 \
+              python3-dev=3.13.5-1 \
+              build-essential=12.12 \
+              ca-certificates=20250419 \
+              scons=4.8.1+dfsg-1 \
+              cmake=3.31.6-2 \
+              curl=8.14.1-2+deb13u2 \
+              && ./scripts/build-wheel.sh /work/dist"
+
+      - name: Package kernel sources
+        run: |
+          tar -czf dist/rp1_ws281x_pwm.tar.gz rp1_ws281x_pwm
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/led-v') || (github.event_name == 'workflow_dispatch' && startsWith(inputs.ref, 'led-v'))
+        uses: softprops/action-gh-release@v2.5.0
+        with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref_name }}
+          files: |
+            dist/*.whl
+            dist/rp1_ws281x_pwm.tar.gz
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
