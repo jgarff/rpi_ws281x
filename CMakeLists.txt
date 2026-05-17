@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.0.0...3.10)
 
 # read and parse version file
 file(READ version PROJECT_VERSION)
