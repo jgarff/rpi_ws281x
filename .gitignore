@@ -1,3 +1,11 @@
+# Ignore IDE folders + VSC workspace
+**/.idea/**
+**/.vs/**
+**.code-workspace
+
+# Ignore CMake debug build folder
+cmake-build-debug/
+
 .sconsign.dblite
 version.h
 *.pyc
