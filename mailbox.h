@@ -37,6 +37,7 @@ int mbox_open(void);
 void mbox_close(int file_desc);
 
 unsigned get_version(int file_desc);
+uint32_t get_hwver(int file_desc);
 unsigned mem_alloc(int file_desc, unsigned size, unsigned align, unsigned flags);
 unsigned mem_free(int file_desc, unsigned handle);
 unsigned mem_lock(int file_desc, unsigned handle);
