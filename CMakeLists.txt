@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 
-# read and parse version file
-file(READ version PROJECT_VERSION)
+# read and parse 'ws281x_version.h' file
+file(READ ws281x_version.h PROJECT_VERSION)
 string(STRIP ${PROJECT_VERSION} PROJECT_VERSION)
 string(REGEX REPLACE "([0-9]+)\\.[0-9]+\\.[0-9]+" "\\1" VERSION_MAJOR ${PROJECT_VERSION})
 string(REGEX REPLACE "[0-9]+\\.([0-9]+)\\.[0-9]+" "\\1" VERSION_MINOR ${PROJECT_VERSION})
