@@ -11,12 +11,13 @@ set(HEADERDEF "${VERSION_MAJOR}_${VERSION_MINOR}_${VERSION_MICRO}")
 
 project(rpi_ws281x VERSION ${PROJECT_VERSION})
 
-option(BUILD_SHARED "Build as shared library" OFF)
 option(BUILD_TEST "Build test application" ON)
 
 set(CMAKE_C_STANDARD 11)
 
 set(LIB_TARGET ws2811)
+set(LIB_SHARED_TARGET "${LIB_TARGET}-shared")
+set(LIB_STATIC_TARGET "${LIB_TARGET}-static")
 set(TEST_TARGET test)
 
 set(LIB_PUBLIC_HEADERS
@@ -53,25 +54,27 @@ configure_file(
     @ONLY
 )
 
-set(DEST_HEADERS_DIR include/ws2811)
-set(DEST_LIB_DIR lib)
+add_library(${LIB_SHARED_TARGET} SHARED ${LIB_SOURCES})
+add_library(${LIB_STATIC_TARGET} ${LIB_SOURCES})
 
-if(BUILD_SHARED)
-    add_library(${LIB_TARGET} SHARED ${LIB_SOURCES})
-else()
-    add_library(${LIB_TARGET} ${LIB_SOURCES})
-endif()
+target_link_libraries(${LIB_SHARED_TARGET} m)
+target_link_libraries(${LIB_STATIC_TARGET} m)
 
-target_link_libraries(${LIB_TARGET} m)
-set_target_properties(${LIB_TARGET} PROPERTIES PUBLIC_HEADER "${LIB_PUBLIC_HEADERS}")
+set_target_properties(${LIB_SHARED_TARGET} ${LIB_STATIC_TARGET}
+  PROPERTIES
+  OUTPUT_NAME ${LIB_TARGET}
+  VERSION 1.1
+  SOVERSION 1
+  PUBLIC_HEADER "${LIB_PUBLIC_HEADERS}")
 
-install(TARGETS ${LIB_TARGET}
-    ARCHIVE DESTINATION ${DEST_LIB_DIR}
-    PUBLIC_HEADER DESTINATION ${DEST_HEADERS_DIR}
+install(TARGETS ${LIB_SHARED_TARGET} ${LIB_STATIC_TARGET}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/ws2811"
 )
 
 INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/libws2811.pc"
-        DESTINATION lib/pkgconfig)
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 
 install(CODE "execute_process(COMMAND /sbin/ldconfig
                               RESULT_VARIABLE EXIT_STATUS
@@ -84,5 +87,5 @@ if(BUILD_TEST)
     include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
     add_executable(${TEST_TARGET} ${TEST_SOURCES})
-    target_link_libraries(${TEST_TARGET} ${LIB_TARGET})
+    target_link_libraries(${TEST_TARGET} ${LIB_SHARED_TARGET})
 endif()

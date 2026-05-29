@@ -1,0 +1,5 @@
+libws2811 (1.1.0) bookworm; urgency=medium
+
+  * Initial deb package release.
+
+ -- Jeremy Garff <jer@jers.net>  Wed, 13 Nov 2024 00:29:37 +0000
